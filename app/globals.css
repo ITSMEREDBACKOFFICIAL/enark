@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+
+:root {
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --enark-red: #FF0000;
+}
+
+body {
+  background-color: #000000;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+}
+
+/* Brutalist Grid System */
+.grid-border {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.grid-border-red {
+  border: 1px solid var(--enark-red);
+}
+
+.corner-top-left::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid var(--enark-red);
+  border-left: 2px solid var(--enark-red);
+}
+
+.corner-bottom-right::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid var(--enark-red);
+  border-right: 2px solid var(--enark-red);
+}
+
+/* Vertical Sticky Reveal */
+.horizon-section {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: black;
+}
+
+.enark-button {
+  background: var(--enark-red);
+  color: white;
+  padding: 1.5rem 3rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  transition: all 0.2s steps(4);
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%);
+}
+
+.enark-button:hover {
+  background: white;
+  color: black;
+  transform: translate(4px, -4px);
+  box-shadow: -4px 4px 0px var(--enark-red);
+}
+
+.mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+::-webkit-scrollbar {
+  width: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--enark-red);
+}
+
+@layer utilities {
+  .tracking-tighter-x {
+    letter-spacing: -0.08em;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Mobile/Touch Optimization */
+@media (hover: none) {
+  .grayscale {
+    filter: grayscale(0) !important;
+  }
+  .group-hover\:grayscale-0 {
+    filter: grayscale(0) !important;
+  }
+  .opacity-0 {
+    opacity: 1 !important;
+  }
+  .translate-y-8 {
+    transform: translateY(0) !important;
+  }
+  .group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
+  /* Ensure details are visible on touch */
+  .group:active .opacity-0 {
+    opacity: 1 !important;
+  }
+}
