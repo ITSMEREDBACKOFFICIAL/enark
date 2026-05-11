@@ -1,19 +1,24 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform, MotionValue } from 'framer-motion';
 
-export default function BackgroundBoxes() {
+export default function BackgroundBoxes({ scrollProgress }: { scrollProgress?: MotionValue<number> }) {
   const [columns, setColumns] = useState(0);
   const [rows, setRows] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll-linked transformations
+  const rotateX = useTransform(scrollProgress || new useMotionValue(0), [0, 1], [20, 45]);
+  const scale = useTransform(scrollProgress || new useMotionValue(0), [0, 1], [1.2, 1.5]);
+  const opacity = useTransform(scrollProgress || new useMotionValue(0), [0, 0.5, 1], [0.05, 0.2, 0.3]);
 
   useEffect(() => {
     const updateGrid = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setColumns(Math.ceil(width / 40));
-        setRows(Math.ceil(height / 40));
+        setColumns(Math.ceil(width / 60)); // Slightly larger boxes for better performance on large grids
+        setRows(Math.ceil(height / 60));
       }
     };
 
@@ -23,26 +28,29 @@ export default function BackgroundBoxes() {
   }, []);
 
   return (
-    <div 
+    <motion.div 
       ref={containerRef}
-      className="absolute inset-0 overflow-hidden pointer-events-none opacity-20"
+      className="absolute inset-0 overflow-hidden pointer-events-none"
       style={{
-        perspective: '1000px'
+        perspective: '1000px',
+        opacity
       }}
     >
-      <div 
+      <motion.div 
         className="grid absolute inset-0"
         style={{
           gridTemplateColumns: `repeat(${columns}, 1fr)`,
-          transform: 'rotateX(20deg) rotateY(-10deg) scale(1.2)',
+          rotateX,
+          rotateY: -10,
+          scale,
           transformOrigin: 'center center'
         }}
       >
         {Array.from({ length: columns * rows }).map((_, i) => (
           <Box key={i} />
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
