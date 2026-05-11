@@ -14,13 +14,14 @@ import MinimalGuide from '@/components/ui/MinimalGuide';
 import SpectraNoise from '@/components/ui/SpectraNoise';
 import { useAudio } from '@/hooks/useAudio';
 
+import CoverflowCarousel from '@/components/ui/CoverflowCarousel';
+
 export default function Home() {
   const { playWarp, playClick, playHum } = useAudio();
   const containerRef = useRef<HTMLDivElement>(null);
   const { toggleMenu } = useMenuStore();
   const router = useRouter();
   const [isWarping, setIsWarping] = useState(false);
-  const [systemStatus, setSystemStatus] = useState('OPTIMAL');
 
   const handleWarp = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,35 +36,17 @@ export default function Home() {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      // Reveal animations for sections
+      // Reveal animations for the carousel
       gsap.fromTo(
-        '.reveal-section',
-        { opacity: 0, y: 50 },
+        '.carousel-reveal',
+        { opacity: 0, scale: 0.9 },
         {
           opacity: 1,
-          y: 0,
-          duration: 1.2,
+          scale: 1,
+          duration: 2,
           ease: 'power3.out',
-          stagger: 0.2,
-          scrollTrigger: {
-            trigger: '.reveal-section',
-            start: 'top 80%',
-            toggleActions: 'play none none none',
-          },
         }
       );
-
-      // Parallax effect for the cinematic gallery wrapper
-      gsap.to('.parallax-bg', {
-        yPercent: 20,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.parallax-container',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true
-        }
-      });
     }, containerRef);
 
     return () => ctx.revert();
@@ -75,91 +58,52 @@ export default function Home() {
       {/* Background Layer */}
       <SpectraNoise />
       
-      {/* Global Grain & Scanline Overlays (Handled in Shader but extra for depth) */}
+      {/* Global Grain & Scanline Overlays */}
       <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       
       <Header />
       
       {/* --- HERO SECTION --- */}
-      <section className="relative h-screen w-full flex flex-col items-center justify-center px-6 overflow-hidden">
-        <div className="absolute top-32 left-12 hidden lg:block">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col gap-2"
-          >
-            <span className="text-[10px] font-black tracking-[0.5em] text-enark-red">ENARK_OS // v2.0.4</span>
-            <span className="text-[8px] text-white/40 uppercase tracking-widest">Neural_Mesh_Active</span>
-          </motion.div>
+      <section className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden">
+        
+        {/* 3D CAROUSEL (Behind Button) */}
+        <div className="absolute inset-0 flex items-center justify-center carousel-reveal opacity-0">
+          <CoverflowCarousel />
         </div>
 
-        <div className="flex flex-col items-center text-center space-y-8 z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="space-y-4"
-          >
-            <h1 className="text-[12vw] md:text-[10vw] font-black uppercase tracking-tighter-x italic leading-[0.75]">
-              OBSIDIAN
-            </h1>
-            <h1 className="text-[12vw] md:text-[10vw] font-black uppercase tracking-tighter-x italic leading-[0.75] text-transparent stroke-white stroke-1">
-              MANIFESTO
-            </h1>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            transition={{ delay: 0.8 }}
-            className="max-w-md"
-          >
-            <p className="text-[10px] md:text-xs uppercase tracking-[0.4em] leading-relaxed">
-              Industrial grade aesthetic for the high-performance individual. 
-              Engineered in the Enark Node 01.
-            </p>
-          </motion.div>
-
+        {/* INTERACTIVE BUTTON (Foreground) */}
+        <div className="relative z-[100] flex flex-col items-center gap-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            className="pt-12"
           >
             <button 
               onClick={handleWarp}
               onMouseEnter={() => playHum()}
-              className="group relative px-16 py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.5em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+              className="group relative px-16 py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.5em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_80px_rgba(0,0,0,0.8)]"
             >
               <span className="relative z-10">INITIATE_UPLINK</span>
               <div className="absolute inset-0 bg-enark-red translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
             </button>
           </motion.div>
+
+          {/* Simple Navigation Instruction */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.2 }}
+            transition={{ delay: 1.5 }}
+            className="flex items-center gap-4"
+          >
+            <div className="w-8 h-[1px] bg-white/20" />
+            <span className="text-[7px] font-black uppercase tracking-[0.6em]">Swipe_To_Navigate_Assets</span>
+            <div className="w-8 h-[1px] bg-white/20" />
+          </motion.div>
         </div>
 
-        {/* Bottom Metrics */}
-        <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end">
-          <div className="flex gap-12">
-            {[
-              { label: 'Latency', val: '0.04ms' },
-              { label: 'Uptime', val: '99.9%' },
-              { label: 'Node', val: 'IN_01' }
-            ].map((stat) => (
-              <div key={stat.label} className="hidden md:flex flex-col gap-1">
-                <span className="text-[7px] text-white/30 uppercase tracking-widest">{stat.label}</span>
-                <span className="text-[10px] font-bold text-white/60">{stat.val}</span>
-              </div>
-            ))}
-          </div>
-          <motion.div 
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="flex flex-col items-center gap-4 cursor-pointer"
-            onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-          >
-            <span className="text-[8px] font-black uppercase tracking-[0.5em] text-white/30">Scroll_To_Explore</span>
-            <ChevronDown size={14} className="text-enark-red" />
-          </motion.div>
+        {/* Minimal Scroll Hint */}
+        <div className="absolute bottom-12 flex flex-col items-center gap-4 opacity-10">
+            <ChevronDown size={14} className="text-white animate-bounce" />
         </div>
       </section>
 
