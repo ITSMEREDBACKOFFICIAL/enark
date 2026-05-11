@@ -10,6 +10,7 @@ import { useAudio } from '@/hooks/useAudio';
 import { Filter, Grid, List as ListIcon, Search } from 'lucide-react';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useCart } from '@/store/useCart';
 
 function ShopAllContent() {
   const [products, setProducts] = useState<any[]>([]);
