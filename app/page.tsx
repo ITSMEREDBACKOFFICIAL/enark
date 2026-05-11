@@ -18,6 +18,56 @@ import BackgroundBoxes from '@/components/ui/BackgroundBoxes';
 import ParallaxGallery from '@/components/ui/ParallaxGallery';
 import Hero3D from '@/components/ui/Hero3D';
 
+function MagneticButton({ children, onClick }: { children: React.ReactNode, onClick: (e: any) => void }) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!ref.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    
+    const distanceX = clientX - centerX;
+    const distanceY = clientY - centerY;
+    const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
+
+    if (distance < 200) {
+      setPosition({ x: distanceX * 0.4, y: distanceY * 0.4 });
+    } else {
+      setPosition({ x: 0, y: 0 });
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  const { x, y } = position;
+
+  return (
+    <motion.div
+      ref={ref}
+      animate={{ x, y }}
+      transition={{ type: 'spring', stiffness: 150, damping: 15, mass: 0.1 }}
+      className="pointer-events-auto"
+    >
+      <button 
+        onClick={onClick}
+        className="group relative px-20 py-8 bg-white text-black text-[12px] font-black uppercase tracking-[0.6em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_100px_rgba(0,0,0,0.5)]"
+      >
+        <span className="relative z-10">{children}</span>
+        <div className="absolute inset-0 bg-enark-red translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+        
+        {/* Soft Pulse Glow */}
+        <div className="absolute inset-0 bg-white/20 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
+      </button>
+    </motion.div>
+  );
+}
+
 export default function Home() {
   const { playWarp, playClick, playHum } = useAudio();
   const containerRef = useRef<HTMLDivElement>(null);
