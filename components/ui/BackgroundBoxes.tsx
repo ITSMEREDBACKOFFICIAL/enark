@@ -11,13 +11,14 @@ export default function BackgroundBoxes({ scrollProgress }: { scrollProgress?: M
   // Scroll-linked transformations
   const rotateX = useTransform(scrollProgress || new useMotionValue(0), [0, 1], [20, 45]);
   const scale = useTransform(scrollProgress || new useMotionValue(0), [0, 1], [1.2, 1.5]);
-  const opacity = useTransform(scrollProgress || new useMotionValue(0), [0, 0.5, 1], [0.05, 0.2, 0.3]);
+  // Increased base opacity for better visibility in light mode
+  const opacity = useTransform(scrollProgress || new useMotionValue(0), [0, 0.5, 1], [0.15, 0.4, 0.6]);
 
   useEffect(() => {
     const updateGrid = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setColumns(Math.ceil(width / 60)); // Slightly larger boxes for better performance on large grids
+        setColumns(Math.ceil(width / 60));
         setRows(Math.ceil(height / 60));
       }
     };
@@ -33,7 +34,7 @@ export default function BackgroundBoxes({ scrollProgress }: { scrollProgress?: M
       className="absolute inset-0 overflow-hidden pointer-events-none"
       style={{
         perspective: '1000px',
-        opacity
+        opacity: scrollProgress ? opacity : 0.4 // Higher default for footer
       }}
     >
       <motion.div 
@@ -70,12 +71,11 @@ function Box() {
   }, []);
 
   const ref = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
 
-  // We use a simplified proximity check
+  // Proximity check with higher intensity
   const springConfig = { stiffness: 150, damping: 20 };
   const scale = useSpring(1, springConfig);
-  const opacity = useSpring(0.1, springConfig);
+  const opacity = useSpring(0.15, springConfig);
 
   useEffect(() => {
     const checkProximity = () => {
@@ -88,13 +88,13 @@ function Box() {
       const dy = mouseY.get() - centerY;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < 100) {
-        const factor = 1 - distance / 100;
-        scale.set(1 + factor * 0.5);
-        opacity.set(0.2 + factor * 0.8);
+      if (distance < 150) {
+        const factor = 1 - distance / 150;
+        scale.set(1 + factor * 0.8);
+        opacity.set(0.3 + factor * 0.7);
       } else {
         scale.set(1);
-        opacity.set(0.1);
+        opacity.set(0.15);
       }
     };
 
@@ -102,7 +102,8 @@ function Box() {
     return () => unsubscribeX();
   }, []);
 
-  const colors = ['#eab308', '#ec4899', '#8b5cf6', '#3b82f6'];
+  // Use more vibrant colors that work in both modes
+  const colors = ['#E11D48', '#2563EB', '#7C3AED', '#D97706'];
   const color = colors[Math.floor(Math.random() * colors.length)];
 
   return (
@@ -112,8 +113,9 @@ function Box() {
         scale,
         opacity,
         borderColor: color,
+        borderWidth: '1px'
       }}
-      className="w-10 h-10 border-[0.5px] border-white/10"
+      className="w-10 h-10 border-foreground/20"
     />
   );
 }
