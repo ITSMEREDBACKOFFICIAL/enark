@@ -297,11 +297,6 @@ function ShopAllContent() {
           )}
         </AnimatePresence>
       </div>
-
-    </main>
-  );
-}
-
       <RecentlyViewed />
       <Footer />
     </main>
