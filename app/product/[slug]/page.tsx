@@ -28,6 +28,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [vaultCode, setVaultCode] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [showVaultError, setShowVaultError] = useState(false);
+  const [isDiagnostic, setIsDiagnostic] = useState(false);
 
   // Ticker Logic
   const [tickerIndex, setTickerIndex] = useState(0);

@@ -1,9 +1,11 @@
-import { Cashfree } from "cashfree-pg";
+import { Cashfree, CFEnvironment } from "cashfree-pg";
 
-Cashfree.XClientId = process.env.CASHFREE_APP_ID || "";
-Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY || "";
-Cashfree.XEnvironment = process.env.NODE_ENV === "production" 
-  ? Cashfree.Environment.PRODUCTION 
-  : Cashfree.Environment.SANDBOX;
+const cashfree = new Cashfree(
+  process.env.NODE_ENV === "production" 
+    ? CFEnvironment.PRODUCTION 
+    : CFEnvironment.SANDBOX,
+  process.env.CASHFREE_APP_ID || "",
+  process.env.CASHFREE_SECRET_KEY || ""
+);
 
-export { Cashfree };
+export { cashfree, Cashfree };

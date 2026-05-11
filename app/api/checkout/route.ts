@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { Cashfree } from "cashfree-pg";
+import { cashfree, Cashfree } from "@/lib/cashfree";
 
 // Environment validation
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -69,13 +69,6 @@ export async function POST(req: Request) {
          return NextResponse.json({ error: 'CASHFREE_KEYS_MISSING: Please set CASHFREE_APP_ID and CASHFREE_SECRET_KEY' }, { status: 500 });
       }
 
-      // Initialize inside handler
-      Cashfree.XClientId = cfAppId;
-      Cashfree.XClientSecret = cfSecret;
-      Cashfree.XEnvironment = process.env.NODE_ENV === "production" 
-        ? Cashfree.Environment.PRODUCTION 
-        : Cashfree.Environment.SANDBOX;
-
       try {
         const request = {
           order_amount: Math.round(total * 100) / 100,
@@ -91,7 +84,7 @@ export async function POST(req: Request) {
           }
         };
 
-        const response = await Cashfree.PGCreateOrder("2023-08-01", request);
+        const response = await cashfree.PGCreateOrder(request, "2023-08-01");
         paymentSessionId = response.data?.payment_session_id;
         if (!paymentSessionId) throw new Error('CASHFREE_SESSION_FAILED');
       } catch (cfError: any) {

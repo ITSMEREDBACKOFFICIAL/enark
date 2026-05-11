@@ -15,7 +15,7 @@ import MinimalGuide from '@/components/ui/MinimalGuide';
 
 import { useAudio } from '@/hooks/useAudio';
 export default function Home() {
-  const { playWarp } = useAudio();
+  const { playWarp, playClick } = useAudio();
   const containerRef = useRef<HTMLDivElement>(null);
   const { toggleMenu } = useMenuStore();
   const router = useRouter();

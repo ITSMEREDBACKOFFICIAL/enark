@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -10,7 +10,8 @@ import { useAudio } from '@/hooks/useAudio';
 import { Filter, Grid, List as ListIcon, Search } from 'lucide-react';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { useSearchParams, useRouter } from 'next/navigation';
-export default function ShopAllPage() {
+
+function ShopAllContent() {
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -48,7 +49,7 @@ export default function ShopAllPage() {
       }
     }
     fetchProducts();
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -374,5 +375,17 @@ export default function ShopAllPage() {
       <RecentlyViewed />
       <Footer />
     </main>
+  );
+}
+
+export default function ShopAllPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <p className="mono text-[10px] uppercase tracking-[0.5em] animate-pulse">INIT_CATALOG...</p>
+      </main>
+    }>
+      <ShopAllContent />
+    </Suspense>
   );
 }

@@ -36,7 +36,7 @@ import CareerManager from '@/components/admin/CareerManager';
 import MediaVault from '@/components/admin/MediaVault';
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'orders' | 'offers' | 'users' | 'settings' | 'neural' | 'media' | 'drop' | 'models' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'orders' | 'offers' | 'users' | 'settings' | 'neural' | 'media' | 'drop' | 'models' | 'audit' | 'careers'>('overview');
   const [isMobile, setIsMobile] = useState(false);
   const [isLockdownActive, setIsLockdownActive] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);

@@ -61,6 +61,10 @@ export default function FinancialIntelligence() {
     };
   }, []);
 
+  const logSystemAction = (action: string, category: string) => {
+    console.log(`[SYSTEM_LOG] ${category} // ${action} at ${new Date().toISOString()}`);
+  };
+
   async function fetchIntelligence() {
     setLoading(true);
     

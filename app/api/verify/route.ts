@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Cashfree } from '@/lib/cashfree';
+import { cashfree } from '@/lib/cashfree';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
 
     if (!orderId) return NextResponse.json({ error: 'Missing order_id' }, { status: 400 });
 
-    const response = await Cashfree.PGOrderFetchPayments("2023-08-01", orderId);
+    const response = await cashfree.PGOrderFetchPayments(orderId, "2023-08-01");
     const payments = response.data;
 
     const successfulPayment = payments.find((p: any) => p.payment_status === 'SUCCESS');
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
       // Check if already paid in DB to avoid double processing
       const { data: order } = await supabase.from('orders').select('status').eq('razorpay_order_id', orderId).single();
       
-      if (order && order.status !== 'paid') {
+      if (order && order.status !== 'paid' && successfulPayment.cf_payment_id) {
         await finalizeOrder(orderId, successfulPayment.cf_payment_id.toString());
       }
       
