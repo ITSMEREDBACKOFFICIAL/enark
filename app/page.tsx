@@ -14,14 +14,76 @@ import MinimalGuide from '@/components/ui/MinimalGuide';
 import SpectraNoise from '@/components/ui/SpectraNoise';
 import { useAudio } from '@/hooks/useAudio';
 
-import CardStack3D from '@/components/ui/CardStack3D';
+import Hero3D from '@/components/ui/Hero3D';
+
+function MagneticButton({ children, onClick }: { children: React.ReactNode, onClick: (e: any) => void }) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!ref.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    
+    const distanceX = clientX - centerX;
+    const distanceY = clientY - centerY;
+    const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
+
+    if (distance < 200) {
+      setPosition({ x: distanceX * 0.4, y: distanceY * 0.4 });
+    } else {
+      setPosition({ x: 0, y: 0 });
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  const { x, y } = position;
+
+  return (
+    <motion.div
+      ref={ref}
+      animate={{ x, y }}
+      transition={{ type: 'spring', stiffness: 150, damping: 15, mass: 0.1 }}
+      className="pointer-events-auto"
+    >
+      <button 
+        onClick={onClick}
+        className="group relative px-20 py-8 bg-white text-black text-[12px] font-black uppercase tracking-[0.6em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_100px_rgba(0,0,0,0.5)]"
+      >
+        <span className="relative z-10">{children}</span>
+        <div className="absolute inset-0 bg-enark-red translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+        
+        {/* Soft Pulse Glow */}
+        <div className="absolute inset-0 bg-white/20 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
+      </button>
+    </motion.div>
+  );
+}
 
 export default function Home() {
   const { playWarp, playClick, playHum } = useAudio();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { toggleMenu } = useMenuStore();
   const router = useRouter();
   const [isWarping, setIsWarping] = useState(false);
+
+  // Parallax Text Offset
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const handleGlobalMouse = (e: MouseEvent) => {
+      setMousePos({ 
+        x: (e.clientX / window.innerWidth - 0.5) * 50, 
+        y: (e.clientY / window.innerHeight - 0.5) * 50 
+      });
+    };
+    window.addEventListener('mousemove', handleGlobalMouse);
+    return () => window.removeEventListener('mousemove', handleGlobalMouse);
+  }, []);
 
   const handleWarp = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -33,59 +95,47 @@ export default function Home() {
   };
 
   return (
-    <main ref={containerRef} className="relative min-h-screen bg-black text-white selection:bg-enark-red selection:text-white mono">
-      
-      {/* Background Layer */}
-      <SpectraNoise />
-      
-      {/* Global Grain & Scanline Overlays */}
-      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-      
+    <main ref={containerRef} className="relative h-screen bg-black text-white selection:bg-enark-red selection:text-white mono overflow-hidden">
       <Header />
       
-      {/* --- HERO SECTION WITH 3D CARD STACK --- */}
-      <section className="relative w-full overflow-visible">
-        
-        {/* The 3D Scrollable Stack (Behind Button) */}
-        <div className="relative z-0">
-          <CardStack3D />
-        </div>
-
-        {/* STICKY INTERACTIVE BUTTON (Foreground) */}
-        <div className="fixed inset-0 pointer-events-none z-[100] flex flex-col items-center justify-center gap-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            className="pointer-events-auto"
-          >
-            <button 
-              onClick={handleWarp}
-              onMouseEnter={() => playHum()}
-              className="group relative px-16 py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.5em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_100px_rgba(0,0,0,1)]"
-            >
-              <span className="relative z-10">INITIATE_UPLINK</span>
-              <div className="absolute inset-0 bg-enark-red translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
-            </button>
-          </motion.div>
-
-          {/* Scrolling Instructions */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.3 }}
-            transition={{ delay: 1.5 }}
-            className="flex flex-col items-center gap-4"
-          >
-            <span className="text-[7px] font-black uppercase tracking-[0.6em]">Scroll_To_Cycle_Assets</span>
-            <ChevronDown size={14} className="text-white animate-bounce" />
-          </motion.div>
-        </div>
+      {/* 3D HERO STAGE */}
+      <section className="absolute inset-0 z-0">
+        <Hero3D />
       </section>
 
-      {/* Footer Branding Offset */}
-      <div className="h-64 bg-black relative z-10" />
+      {/* OVERLAY UI */}
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center pointer-events-none">
+        
+        {/* Kinetic Parallax Typography */}
+        <motion.div 
+          animate={{ x: -mousePos.x, y: -mousePos.y }}
+          transition={{ type: 'tween', ease: 'linear', duration: 0.2 }}
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        >
+          <h1 className="text-[25vw] font-black uppercase italic tracking-tighter opacity-[0.05] select-none">
+            ENARK
+          </h1>
+        </motion.div>
 
-      {/* --- FOOTER --- */}
+        {/* Magnetic CTA */}
+        <div className="mt-[40vh]">
+          <MagneticButton onClick={handleWarp}>
+            VIEW_COLLECTION
+          </MagneticButton>
+        </div>
+
+        {/* Scrolling Instructions */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.3 }}
+          transition={{ delay: 2 }}
+          className="absolute bottom-12 flex flex-col items-center gap-4"
+        >
+          <span className="text-[7px] font-black uppercase tracking-[0.6em]">Scroll_To_Analyze_Assets</span>
+          <ChevronDown size={14} className="text-white animate-bounce" />
+        </motion.div>
+      </div>
+
       <Footer />
 
       {/* --- WARP TRANSITION --- */}
@@ -104,7 +154,7 @@ export default function Home() {
               className="w-40 h-40 rounded-full bg-enark-red blur-3xl opacity-50"
             />
             <div className="absolute font-sans font-black text-white text-[10px] tracking-[1em] uppercase opacity-40 animate-pulse">
-              CALIBRATING_UPLINK...
+              INITIATING_COLLECTION_SYNC...
             </div>
           </motion.div>
         )}

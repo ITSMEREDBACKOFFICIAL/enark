@@ -266,3 +266,12 @@ body {
   border-color: rgba(255, 255, 255, 0.1);
   position: absolute;
 }
+
+.bg-matte-gradient {
+  background: radial-gradient(circle at center, #1A1A1A 0%, #0A0A0A 100%);
+}
+
+.text-outline-premium {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+  color: transparent;
+}
