@@ -3,13 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import CinematicGallery from '@/components/home/CinematicGallery';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { useMenuStore } from '@/store/useMenuStore';
-import { ChevronDown, Instagram, Ruler, Shield, Zap, Activity, Globe } from 'lucide-react';
+import { ChevronDown, Instagram, Ruler } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import MinimalGuide from '@/components/ui/MinimalGuide';
 import SpectraNoise from '@/components/ui/SpectraNoise';
@@ -164,52 +163,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- CINEMATIC GALLERY SECTION --- */}
-      <section className="relative min-h-screen py-32 bg-transparent overflow-hidden parallax-container">
-        <div className="max-w-screen-2xl mx-auto px-6 reveal-section">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-            <div className="space-y-4">
-              <span className="text-enark-red text-[10px] font-black tracking-[0.5em] uppercase">Visual_Archive</span>
-              <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic">THE_STILL_FRAME</h2>
-            </div>
-            <Link 
-              href="/shop" 
-              className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors border-b border-white/10 pb-2"
-            >
-              View_All_Assets
-            </Link>
-          </div>
-        </div>
-        
-        <div className="parallax-bg relative h-[120vh] -mt-[10vh]">
-          <CinematicGallery />
-        </div>
-      </section>
-
-      {/* --- FEATURE MATRIX --- */}
-      <section className="relative py-32 bg-black/40 backdrop-blur-3xl border-y border-white/5">
-        <div className="max-w-screen-2xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
-          {[
-            { icon: Shield, title: 'SECURE_TRANSFERS', desc: 'Encrypted payment protocols with real-time verification nodes.' },
-            { icon: Zap, title: 'INSTANT_DISPATCH', desc: 'Express deployment from our decentralized fulfillment mesh.' },
-            { icon: Globe, title: 'NEURAL_NETWORK', desc: 'Join a community of 50k+ high-performance operatives.' }
-          ].map((feature, i) => (
-            <motion.div 
-              key={i}
-              whileHover={{ y: -10 }}
-              className="p-12 border border-white/10 bg-white/[0.02] space-y-6 group hover:border-enark-red transition-all"
-            >
-              <feature.icon size={32} className="text-white/20 group-hover:text-enark-red transition-colors" />
-              <div className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-[0.4em]">{feature.title}</h3>
-                <p className="text-[10px] text-white/40 uppercase tracking-widest leading-relaxed">
-                  {feature.desc}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {/* Footer Branding Offset */}
+      <div className="h-32" />
 
       {/* --- FOOTER --- */}
       <Footer />
