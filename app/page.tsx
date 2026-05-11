@@ -14,7 +14,7 @@ import MinimalGuide from '@/components/ui/MinimalGuide';
 import SpectraNoise from '@/components/ui/SpectraNoise';
 import { useAudio } from '@/hooks/useAudio';
 
-import CoverflowCarousel from '@/components/ui/CoverflowCarousel';
+import SpherePortfolio from '@/components/ui/SpherePortfolio';
 
 export default function Home() {
   const { playWarp, playClick, playHum } = useAudio();
@@ -36,14 +36,14 @@ export default function Home() {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      // Reveal animations for the carousel
+      // Reveal animations for the sphere
       gsap.fromTo(
-        '.carousel-reveal',
-        { opacity: 0, scale: 0.9 },
+        '.sphere-reveal',
+        { opacity: 0, scale: 0.8 },
         {
           opacity: 1,
           scale: 1,
-          duration: 2,
+          duration: 2.5,
           ease: 'power3.out',
         }
       );
@@ -66,22 +66,23 @@ export default function Home() {
       {/* --- HERO SECTION --- */}
       <section className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden">
         
-        {/* 3D CAROUSEL (Behind Button) */}
-        <div className="absolute inset-0 flex items-center justify-center carousel-reveal opacity-0">
-          <CoverflowCarousel />
+        {/* 3D SPHERE (Behind Button) */}
+        <div className="absolute inset-0 flex items-center justify-center sphere-reveal opacity-0 z-0">
+          <SpherePortfolio />
         </div>
 
         {/* INTERACTIVE BUTTON (Foreground) */}
-        <div className="relative z-[100] flex flex-col items-center gap-12">
+        <div className="relative z-[100] flex flex-col items-center gap-12 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
+            className="pointer-events-auto"
           >
             <button 
               onClick={handleWarp}
               onMouseEnter={() => playHum()}
-              className="group relative px-16 py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.5em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_80px_rgba(0,0,0,0.8)]"
+              className="group relative px-16 py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.5em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_80px_rgba(0,0,0,1)]"
             >
               <span className="relative z-10">INITIATE_UPLINK</span>
               <div className="absolute inset-0 bg-enark-red translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
@@ -96,7 +97,7 @@ export default function Home() {
             className="flex items-center gap-4"
           >
             <div className="w-8 h-[1px] bg-white/20" />
-            <span className="text-[7px] font-black uppercase tracking-[0.6em]">Swipe_To_Navigate_Assets</span>
+            <span className="text-[7px] font-black uppercase tracking-[0.6em]">Drag_To_Rotate_Sphere</span>
             <div className="w-8 h-[1px] bg-white/20" />
           </motion.div>
         </div>
