@@ -136,16 +136,6 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* ADDITIONAL SCROLL CONTENT SECTION */}
-      <div className="relative z-10 w-full h-screen flex items-center justify-center bg-transparent pointer-events-none">
-         <div className="max-w-4xl p-12 text-center space-y-12">
-            <h2 className="text-4xl md:text-8xl font-black italic uppercase tracking-tighter-x">Biological_Synthesis</h2>
-            <p className="text-xs md:text-sm text-white/30 uppercase tracking-[0.4em] leading-relaxed">
-              Engineering the next generation of high-performance technical garments. Optimized for the Obsidian Node mesh.
-            </p>
-         </div>
-      </div>
-
       <Footer />
 
       {/* --- WARP TRANSITION --- */}
