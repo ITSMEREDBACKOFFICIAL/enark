@@ -14,7 +14,7 @@ import {
   Sphere
 } from '@react-three/drei';
 import * as THREE from 'three';
-import { motion } from 'framer-motion';
+import { motion, useScroll as useNativeScroll, useTransform } from 'framer-motion';
 
 function Particles({ count = 2000 }) {
   const points = useMemo(() => {
