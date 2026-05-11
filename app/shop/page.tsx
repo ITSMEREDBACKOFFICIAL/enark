@@ -28,6 +28,7 @@ function ShopAllContent() {
   const router = useRouter();
 
   const activeProduct = filteredProducts[currentIndex];
+  console.log('SHOP_DIAGNOSTICS:', { productsCount: products.length, filteredCount: filteredProducts.length, currentIndex, hasActive: !!activeProduct });
 
   useEffect(() => {
     async function fetchProducts() {
