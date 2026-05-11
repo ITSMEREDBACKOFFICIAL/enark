@@ -87,6 +87,17 @@ function ShopAllContent() {
     playWarp();
   };
 
+  // Path Normalizer for assets
+  const getProductImage = (product: any) => {
+    const img = product?.metadata?.image;
+    if (!img) return '/placeholder.jpg';
+    if (img.includes('exo_front')) return '/images/exo-jacket/front.png';
+    if (img.includes('exo_back')) return '/images/exo-jacket/back.png';
+    if (img.includes('exo_detail')) return '/images/exo-jacket/detail.png';
+    if (img.startsWith('/Users/')) return '/placeholder.jpg';
+    return img;
+  };
+
   return (
     <main className="h-screen w-full bg-[#0A0A0A] text-white selection:bg-enark-red selection:text-white mono overflow-hidden flex flex-col">
       <Header />
@@ -96,19 +107,21 @@ function ShopAllContent() {
         
         {/* Backdrop Large Text */}
         <AnimatePresence mode="wait">
-          <motion.h1
-            key={activeProduct?.id}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 0.05, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="absolute inset-0 flex items-center justify-center text-[25vw] font-black italic uppercase tracking-tighter select-none pointer-events-none z-0"
-          >
-            {activeProduct?.name.split(' ')[0]}
-          </motion.h1>
+          {activeProduct && (
+            <motion.h1
+              key={activeProduct.id}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 0.03, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              className="absolute inset-0 flex items-center justify-center text-[22vw] font-black italic uppercase tracking-tighter select-none pointer-events-none z-0"
+            >
+              {activeProduct.name.split(' ')[0]}
+            </motion.h1>
+          )}
         </AnimatePresence>
 
         {/* LEFT INFORMATION PANEL (Split Screen) */}
-        <div className="w-full md:w-[40%] h-auto md:h-full p-8 md:p-20 flex flex-col justify-center space-y-8 md:space-y-16 z-20 relative bg-gradient-to-r from-black via-black/40 to-transparent">
+        <div className="w-full md:w-[45%] h-auto md:h-full p-8 md:p-16 lg:p-24 flex flex-col justify-center space-y-8 md:space-y-12 z-20 relative bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none">
            
            <AnimatePresence mode="wait">
              {activeProduct && (
@@ -118,30 +131,30 @@ function ShopAllContent() {
                  animate={{ opacity: 1, x: 0 }}
                  exit={{ opacity: 0, x: 50 }}
                  transition={{ duration: 0.5 }}
-                 className="space-y-10"
+                 className="space-y-8 pointer-events-auto"
                >
-                 <div className="space-y-4">
+                 <div className="space-y-2">
                     <span className="text-enark-red text-[10px] font-black uppercase tracking-[0.5em]">ASSET_ID // 0{currentIndex + 1}</span>
-                    <h2 className="text-4xl md:text-8xl font-black uppercase tracking-tighter-x italic leading-[0.85]">{activeProduct.name}</h2>
-                    <div className="flex items-center gap-6 pt-4">
+                    <h2 className="text-4xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter-x italic leading-[0.85]">{activeProduct.name}</h2>
+                    <div className="flex items-center gap-6 pt-2">
                        <span className="text-2xl md:text-4xl font-bold italic text-white/40">₹{activeProduct.base_price.toLocaleString()}</span>
                        <span className="px-4 py-1 border border-white/10 text-[9px] font-black uppercase tracking-widest">{activeProduct.category}</span>
                     </div>
                  </div>
 
-                 <div className="max-w-md space-y-10">
+                 <div className="max-w-md space-y-8">
                     <p className="text-[10px] md:text-xs text-white/40 uppercase tracking-[0.2em] leading-relaxed">
                       {activeProduct.description || "High-performance technical garment engineered for the Obsidian Node mesh. Features reinforced seams and industrial-grade textile construction."}
                     </p>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                        <p className="text-[9px] font-black uppercase tracking-[0.4em] text-enark-red">SIZE_CALIBRATION</p>
-                       <div className="flex flex-wrap gap-3">
+                       <div className="flex flex-wrap gap-2">
                           {activeProduct.variants?.map((v: any) => (
                             <button
                               key={v.id}
                               onClick={() => { playClick(); setSelectedSize(v.size); }}
-                              className={`w-14 h-14 md:w-16 md:h-16 border flex items-center justify-center text-[11px] font-black transition-all ${
+                              className={`w-12 h-12 md:w-14 md:h-14 border flex items-center justify-center text-[10px] font-black transition-all ${
                                 selectedSize === v.size ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/40 hover:text-white'
                               }`}
                             >
@@ -152,19 +165,19 @@ function ShopAllContent() {
                     </div>
                  </div>
 
-                 <div className="flex items-center gap-6 pt-10">
+                 <div className="flex items-center gap-6 pt-6">
                     <button 
                       onClick={handleAddToCart}
-                      className="px-16 py-6 bg-enark-red text-white text-[11px] font-black uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all shadow-[0_30px_60px_rgba(220,38,38,0.3)]"
+                      className="px-12 py-5 bg-enark-red text-white text-[10px] font-black uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all shadow-[0_30px_60px_rgba(220,38,38,0.2)]"
                     >
                       ADD_TO_CART_0.1
                     </button>
                     <button 
                       onClick={() => router.push(`/product/${activeProduct.slug}`)}
-                      className="group flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors"
+                      className="group flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors"
                     >
                       <span>VIEW_DATA_LINK</span>
-                      <div className="w-8 h-[1px] bg-white/10 group-hover:w-16 group-hover:bg-enark-red transition-all" />
+                      <div className="w-6 h-[1px] bg-white/10 group-hover:w-12 group-hover:bg-enark-red transition-all" />
                     </button>
                  </div>
                </motion.div>
@@ -172,13 +185,13 @@ function ShopAllContent() {
            </AnimatePresence>
 
            {/* Progress Indicator */}
-           <div className="absolute bottom-12 left-20 right-20 flex items-center gap-4">
+           <div className="absolute bottom-12 left-16 right-16 flex items-center gap-4">
               <span className="text-[10px] font-black opacity-20 mono">0{currentIndex + 1}</span>
-              <div className="flex-1 h-[2px] bg-white/5 overflow-hidden">
+              <div className="flex-1 h-[1px] bg-white/5 overflow-hidden">
                  <motion.div 
                    className="h-full bg-enark-red" 
                    initial={{ width: 0 }}
-                   animate={{ width: `${((currentIndex + 1) / filteredProducts.length) * 100}%` }}
+                   animate={{ width: `${((currentIndex + 1) / (filteredProducts.length || 1)) * 100}%` }}
                  />
               </div>
               <span className="text-[10px] font-black opacity-20 mono">0{filteredProducts.length}</span>
@@ -189,53 +202,53 @@ function ShopAllContent() {
         <div className="flex-1 relative flex items-center justify-center z-10">
            
            {/* Center Image Container */}
-           <div className="relative w-full h-full md:h-[80%] aspect-[3/4] md:aspect-auto flex items-center justify-center p-4 md:p-0">
-              <AnimatePresence initial={false} custom={direction}>
+           <div className="relative w-full h-full md:h-[85%] aspect-[3/4] md:aspect-auto flex items-center justify-center p-4 md:p-12">
+              <AnimatePresence initial={false} custom={direction} mode="popLayout">
                 <motion.div
                   key={currentIndex}
                   custom={direction}
-                  initial={{ opacity: 0, x: direction > 0 ? 500 : -500, scale: 0.8 }}
+                  initial={{ opacity: 0, x: direction > 0 ? 300 : -300, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: direction > 0 ? -500 : 500, scale: 0.8 }}
-                  transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
-                  className="absolute inset-0 flex items-center justify-center"
+                  exit={{ opacity: 0, x: direction > 0 ? -300 : 300, scale: 0.9 }}
+                  transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+                  className="w-full h-full flex items-center justify-center"
                 >
                    <img 
-                     src={activeProduct?.metadata?.image} 
+                     src={getProductImage(activeProduct)} 
                      alt="" 
-                     className="w-full h-full md:w-auto md:h-full object-contain drop-shadow-[0_40px_80px_rgba(0,0,0,1)]"
+                     className="max-w-full max-h-full object-contain drop-shadow-[0_40px_100px_rgba(0,0,0,1)]"
                    />
                 </motion.div>
               </AnimatePresence>
            </div>
 
            {/* Side Peeks (Decorative) */}
-           <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black to-transparent pointer-events-none hidden md:block" />
-           <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black to-transparent pointer-events-none hidden md:block" />
+           <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black via-black/50 to-transparent pointer-events-none hidden md:block z-30" />
+           <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black via-black/50 to-transparent pointer-events-none hidden md:block z-30" />
 
            {/* Navigation Controls */}
-           <div className="absolute bottom-12 right-20 flex gap-4">
+           <div className="absolute bottom-12 right-12 md:right-20 flex gap-4 z-[100]">
               <button 
                 onClick={() => paginate(-1)}
                 disabled={currentIndex === 0}
-                className="w-20 h-20 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all disabled:opacity-5"
+                className="w-16 h-16 md:w-20 md:h-20 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all disabled:opacity-5 bg-black/40 backdrop-blur-md"
               >
-                <ListIcon size={20} className="rotate-180" />
+                <ListIcon size={18} className="rotate-180" />
               </button>
               <button 
                 onClick={() => paginate(1)}
                 disabled={currentIndex === filteredProducts.length - 1}
-                className="w-20 h-20 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all disabled:opacity-5"
+                className="w-16 h-16 md:w-20 md:h-20 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all disabled:opacity-5 bg-black/40 backdrop-blur-md"
               >
-                <ListIcon size={20} />
+                <ListIcon size={18} />
               </button>
            </div>
 
            {/* Search & Diagnostic Toggle */}
-           <div className="absolute top-32 right-20 flex items-center gap-6">
+           <div className="absolute top-24 md:top-32 right-12 md:right-20 flex items-center gap-6 z-[100]">
               <button 
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="group flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                className="group flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors bg-black/40 backdrop-blur-md px-6 py-3 border border-white/5"
               >
                 <span>{isFilterOpen ? 'CLOSE_MANIFEST' : 'OPEN_DIAGNOSTICS'}</span>
                 <Filter size={14} className={isFilterOpen ? 'text-enark-red' : 'text-white/20'} />
