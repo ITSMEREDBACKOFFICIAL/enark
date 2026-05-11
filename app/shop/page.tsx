@@ -70,6 +70,24 @@ function ShopAllContent() {
     }
   };
 
+  const handleAddToCart = () => {
+    if (!activeProduct) return;
+    const variant = activeProduct.variants?.find((v: any) => v.size === selectedSize) || activeProduct.variants?.[0];
+    if (!variant) return;
+
+    addItem({
+      id: activeProduct.id,
+      variantId: variant.id,
+      name: activeProduct.name,
+      price: activeProduct.base_price,
+      image: activeProduct.metadata?.image,
+      quantity: 1,
+      sku: variant.sku,
+      size: variant.size
+    });
+    playWarp();
+  };
+
   // Robust Path Normalizer for assets
   const getProductImage = (product: any) => {
     const img = product?.metadata?.image;
