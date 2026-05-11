@@ -7,6 +7,7 @@ import { useMenuStore } from '@/store/useMenuStore';
 export default function CanvasShiftWrapper({ children }: { children: React.ReactNode }) {
   const { isOpen, closeMenu } = useMenuStore();
   const [showFlash, setShowFlash] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,23 +29,46 @@ export default function CanvasShiftWrapper({ children }: { children: React.React
     };
   }, [isOpen]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const deltaX = touchStartX - touchEndX;
+
+    // Swipe left to close the menu
+    if (deltaX > 50) {
+      closeMenu();
+    }
+    setTouchStartX(null);
+  };
+
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
+    <div className="relative min-h-screen bg-[var(--frame-bg)] overflow-hidden transition-colors duration-500">
       <motion.div
         animate={{
           scale: isOpen ? 0.85 : 1,
           x: isOpen ? '70%' : '0%',
           rotateZ: isOpen ? -2 : 0,
-          borderRadius: isOpen ? '20px' : '0px',
+          borderRadius: isOpen ? '32px' : '24px',
+          margin: isOpen ? '0px' : 'var(--canvas-margin)',
         }}
         transition={{
           type: 'spring',
           stiffness: 300,
           damping: 30,
         }}
-        className="relative min-h-screen bg-black origin-left z-20 shadow-2xl overflow-hidden border border-white/5"
+        className="relative min-h-screen bg-background origin-left z-20 shadow-[0_0_100px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-500"
+        style={{
+          height: 'auto',
+          minHeight: '100vh',
+        }}
       >
-        {children}
+        <div className="relative z-10 w-full h-full">
+          {children}
+        </div>
 
         {/* Non-clickable overlay when menu is open */}
         {isOpen && (
@@ -55,6 +79,8 @@ export default function CanvasShiftWrapper({ children }: { children: React.React
               e.stopPropagation();
               closeMenu();
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           />
         )}
 

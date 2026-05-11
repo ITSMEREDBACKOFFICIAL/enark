@@ -63,12 +63,13 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 mono selection:bg-enark-red selection:text-white">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6 mono selection:bg-enark-red selection:text-white transition-colors duration-500">
       {/* Background Grid Pattern */}
       <div className="fixed inset-0 pointer-events-none opacity-20">
         <div className="absolute inset-0" style={{ 
-          backgroundImage: 'linear-gradient(to right, #333 1px, transparent 1px), linear-gradient(to bottom, #333 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
+          backgroundImage: `linear-gradient(to right, var(--foreground) 1px, transparent 1px), linear-gradient(to bottom, var(--foreground) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+          opacity: 0.1
         }} />
       </div>
 
@@ -77,7 +78,7 @@ export default function AdminLoginPage() {
         animate={{ opacity: 1, y: 0 }}
         className="relative w-full max-w-md"
       >
-        <div className="border-1 border-white/20 bg-black p-8 md:p-12 shadow-[0_0_50px_rgba(255,0,0,0.1)]">
+        <div className="border border-foreground/5 bg-background p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-4 mb-12">
             <div className="w-12 h-12 bg-enark-red flex items-center justify-center">
               <Shield className="text-white" size={24} />
@@ -97,16 +98,16 @@ export default function AdminLoginPage() {
 
           {success ? (
             <div className="space-y-8 text-center py-12">
-              <div className="w-16 h-16 bg-green-500 mx-auto flex items-center justify-center rounded-full animate-bounce">
+              <div className="w-16 h-16 bg-green-600 mx-auto flex items-center justify-center rounded-full animate-bounce">
                 <Shield className="text-white" size={32} />
               </div>
               <div>
                 <h3 className="text-2xl font-black mb-2">ADMIN_UPLINK_CREATED</h3>
-                <p className="text-xs text-white/60 uppercase tracking-widest">VERIFY YOUR IDENTITY VIA EMAIL TO PROCEED.</p>
+                <p className="text-xs text-foreground/60 uppercase tracking-widest">VERIFY YOUR IDENTITY VIA EMAIL TO PROCEED.</p>
               </div>
               <button 
                 onClick={() => { setSuccess(false); setIsSignUp(false); }}
-                className="w-full bg-white text-black py-4 font-black uppercase tracking-widest hover:bg-enark-red hover:text-white transition-all"
+                className="w-full bg-foreground text-background py-4 font-black uppercase tracking-widest hover:bg-enark-red hover:text-white transition-all"
               >
                 RETURN_TO_LOGIN
               </button>
@@ -114,7 +115,7 @@ export default function AdminLoginPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="admin-email" className="text-xs font-black text-white/60 uppercase tracking-widest">ADMIN_IDENTITY</label>
+                <label htmlFor="admin-email" className="text-xs font-black text-foreground/40 uppercase tracking-widest">ADMIN_IDENTITY</label>
                 <input 
                   required
                   id="admin-email"
@@ -123,12 +124,12 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="EMAIL_ADDRESS"
-                  className="w-full bg-white/5 border-1 border-white/10 p-4 text-xs outline-none focus:border-enark-red transition-all text-white"
+                  className="w-full bg-foreground/5 border border-foreground/10 p-4 text-xs outline-none focus:border-enark-red transition-all text-foreground"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="admin-password" className="text-xs font-black text-white/60 uppercase tracking-widest">CIPHER_KEY</label>
+                <label htmlFor="admin-password" className="text-xs font-black text-foreground/40 uppercase tracking-widest">CIPHER_KEY</label>
                 <input 
                   required
                   id="admin-password"
@@ -137,7 +138,7 @@ export default function AdminLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-white/5 border-1 border-white/10 p-4 text-xs outline-none focus:border-enark-red transition-all text-white"
+                  className="w-full bg-foreground/5 border border-foreground/10 p-4 text-xs outline-none focus:border-enark-red transition-all text-foreground"
                 />
               </div>
 
@@ -153,7 +154,7 @@ export default function AdminLoginPage() {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full bg-enark-red text-white py-4 font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-white hover:text-black transition-all group disabled:opacity-50"
+                className="w-full bg-enark-red text-white py-4 font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:bg-foreground hover:text-background transition-all group disabled:opacity-50"
               >
                 {loading ? 'PROCESSING...' : 'INITIALIZE_COMMAND_SESSION'}
                 {!loading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />}
@@ -165,16 +166,16 @@ export default function AdminLoginPage() {
                   setIsSignUp(!isSignUp);
                   setError(null);
                 }}
-                className="w-full text-center text-[11px] font-black text-white/60 hover:text-white uppercase tracking-[0.3em] mt-4 transition-all"
+                className="w-full text-center text-[11px] font-black text-foreground/40 hover:text-foreground uppercase tracking-[0.3em] mt-4 transition-all"
               >
                 {isSignUp ? 'ALREADY_HAVE_ADMIN_NODE? LOGIN' : 'NEED_NEW_ADMIN_NODE? SIGN_UP'}
               </button>
             </form>
           )}
 
-          <div className="mt-12 pt-8 border-t-1 border-white/5 flex items-center justify-between opacity-20">
-            <p className="text-[11px] font-bold uppercase tracking-tighter">SECURED_BY_ALIENKIND_OS_COMMAND</p>
-            <Lock size={12} />
+          <div className="mt-12 pt-8 border-t border-foreground/5 flex items-center justify-between opacity-20">
+            <p className="text-[11px] font-bold uppercase tracking-tighter text-foreground">SECURED_BY_ALIENKIND_OS_COMMAND</p>
+            <Lock size={12} className="text-foreground" />
           </div>
         </div>
 

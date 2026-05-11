@@ -1,0 +1,7 @@
+-- LOGISTICS HARDENING SCHEMA
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS detailed_status TEXT DEFAULT 'Awaiting Manifest';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_back_ordered BOOLEAN DEFAULT false;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS back_order_eta TEXT;
+
+-- FORCE SCHEMA CACHE RELOAD
+NOTIFY pgrst, 'reload schema';

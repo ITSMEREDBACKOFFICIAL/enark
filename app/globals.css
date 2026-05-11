@@ -4,25 +4,65 @@
 
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
 
-:root {
-  --background: #000000;
-  --foreground: #FFFFFF;
-  --enark-red: #FF0000;
+:root, [data-theme='light'], .light {
+  --background: #F9F9F6;
+  --foreground: #000000;
+  --enark-red: #FF2A2A;
+  --border: rgba(0, 0, 0, 0.1);
+  --surface: rgba(0, 0, 0, 0.04);
+  --header-bg: rgba(249, 249, 246, 0.95);
+  --frame-bg: #EAEAEA;
+  --canvas-margin: clamp(0px, 1.5vw, 16px);
+}
+
+[data-theme='dark'], .dark {
+  --background: #050505;
+  --foreground: #F9F9F6;
+  --enark-red: #FF2A2A;
+  --border: rgba(255, 255, 255, 0.03);
+  --surface: rgba(255, 255, 255, 0.04);
+  --header-bg: rgba(5, 5, 5, 0.9);
+  --frame-bg: #000000;
+  --canvas-margin: clamp(0px, 1.5vw, 16px);
+}
+
+body, .bg-background {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.bg-surface {
+  background-color: var(--surface);
+  transition: background-color 0.3s ease;
+}
+
+.border-theme {
+  border-color: var(--border);
+  transition: border-color 0.3s ease;
+}
+
+html {
+  background-color: var(--frame-bg);
+  transition: background-color 0.5s ease;
 }
 
 body {
-  background-color: #000000;
-  color: #ffffff;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
+  background-color: var(--frame-bg);
+}
+
+.text-foreground {
+  color: var(--foreground);
 }
 
 /* Brutalist Grid System */
 .grid-border {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
 }
 
 .grid-border-red {
@@ -58,8 +98,8 @@ body {
   height: 100vh;
   width: 100%;
   overflow: hidden;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: black;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
 }
 
 .enark-button {
@@ -73,8 +113,8 @@ body {
 }
 
 .enark-button:hover {
-  background: white;
-  color: black;
+  background: black;
+  color: white;
   transform: translate(4px, -4px);
   box-shadow: -4px 4px 0px var(--enark-red);
 }
@@ -114,12 +154,6 @@ body {
   .group-hover\:grayscale-0 {
     filter: grayscale(0) !important;
   }
-  .opacity-0 {
-    opacity: 1 !important;
-  }
-  .translate-y-8 {
-    transform: translateY(0) !important;
-  }
   .group-hover\:opacity-100 {
     opacity: 1 !important;
   }
@@ -127,4 +161,108 @@ body {
   .group:active .opacity-0 {
     opacity: 1 !important;
   }
+}
+
+/* ============================================
+   MOBILE TEXT LEGIBILITY SYSTEM
+   Prevents invisible / illegible text on small screens
+   ============================================ */
+@media (max-width: 768px) {
+
+  /* --- Touch targets --- */
+  button, a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* --- iOS momentum scrolling --- */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* --- Safe area for notched phones --- */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  /* --- Prevent zoom on input focus (iOS) --- */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* --- Minimum readable font size ---
+     Any text smaller than 10px becomes 10px on mobile.
+     Uses min() so it never goes below 10px but still
+     respects larger sizes set via Tailwind. */
+  .text-\[7px\]  { font-size: 10px !important; }
+  .text-\[8px\]  { font-size: 10px !important; }
+  .text-\[9px\]  { font-size: 11px !important; }
+  .text-\[10px\] { font-size: 12px !important; }
+  .text-\[11px\] { font-size: 12px !important; }
+
+  /* --- Opacity floor: dim labels stay readable ---
+     Very low opacity text disappears on OLED/low-brightness screens.
+     We lift the floor to /60 equivalent on mobile. */
+  .text-foreground\/20 { color: rgb(var(--foreground-rgb, 249 249 246) / 0.5) !important; }
+  .text-foreground\/25 { color: rgb(var(--foreground-rgb, 249 249 246) / 0.55) !important; }
+  .text-foreground\/30 { color: rgb(var(--foreground-rgb, 249 249 246) / 0.6) !important; }
+  .text-white\/20 { color: rgba(255,255,255,0.5) !important; }
+  .text-white\/25 { color: rgba(255,255,255,0.55) !important; }
+  .text-white\/30 { color: rgba(255,255,255,0.6) !important; }
+
+  /* --- Letter-spacing: extreme tracking collapses on small fonts ---
+     Reduce max tracking on mobile for better legibility */
+  .tracking-\[0\.5em\] { letter-spacing: 0.2em !important; }
+  .tracking-\[0\.4em\] { letter-spacing: 0.2em !important; }
+  .tracking-\[0\.3em\] { letter-spacing: 0.15em !important; }
+
+  /* --- Line height improvement for small text --- */
+  p, span, label {
+    line-height: 1.6;
+  }
+}
+
+/* Hide scrollbar but keep scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes vertical-slide {
+  0%, 20% { transform: translateY(0); }
+  25%, 45% { transform: translateY(-48px); }
+  50%, 70% { transform: translateY(-96px); }
+  75%, 95% { transform: translateY(-144px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-vertical-slide {
+  animation: vertical-slide 12s infinite cubic-bezier(0.76, 0, 0.24, 1);
+}
+/* Vertical Text Utility */
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* Scanline Animation */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.animate-scanline {
+  animation: scanline 4s linear infinite;
+}
+
+/* Technical Crop Marks */
+.crop-mark {
+  width: 15px;
+  height: 15px;
+  border-color: rgba(255, 255, 255, 0.1);
+  position: absolute;
 }

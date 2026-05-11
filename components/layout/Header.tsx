@@ -1,19 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ShoppingBag, Search as SearchIcon, Menu, X, Volume2, VolumeX } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ShoppingBag, Search as SearchIcon, Menu, X, User, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import SearchOverlay from '../ui/SearchOverlay';
-import SaleTicker from '../ui/SaleTicker';
+import dynamic from 'next/dynamic';
 import { useCart } from '@/store/useCart';
 import { useAudio } from '@/hooks/useAudio';
 import { useMenuStore } from '@/store/useMenuStore';
+import ThemeToggle from '../ui/ThemeToggle';
 
 export default function Header() {
   const { items, setIsOpen } = useCart();
   const { playClick, playHum } = useAudio();
   const { isOpen, toggleMenu } = useMenuStore();
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -21,6 +26,11 @@ export default function Header() {
   const [marqueeText, setMarqueeText] = useState('ENARK_OS: ONLINE // PROTOCOL_READY // SYSTEM_STABLE');
   const [brandName, setBrandName] = useState('ENARK');
   const [isGlobalMuted, setIsGlobalMuted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  const headerTheme = isHomePage ? (isScrolled ? 'dark' : 'light') : 'dark';
+  const textColor = headerTheme === 'dark' ? 'text-foreground' : 'text-white';
+  const hoverColor = headerTheme === 'dark' ? 'hover:text-foreground/80' : 'hover:text-white/70';
 
   useEffect(() => {
     async function getSession() {
@@ -54,6 +64,7 @@ export default function Header() {
   };
 
   useEffect(() => {
+    setIsMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -98,42 +109,60 @@ export default function Header() {
       <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       
       <header 
-        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-700 bg-black border-b ${
-          isScrolled ? 'border-white/20' : 'border-transparent'
+        className={`fixed z-[100] transition-all duration-300 rounded-t-[24px] overflow-hidden ${
+          headerTheme === 'dark' 
+            ? 'bg-[var(--header-bg)] border border-theme' 
+            : 'bg-black/10 backdrop-blur-md border border-transparent'
         }`}
+        style={{
+          top: 'var(--canvas-margin)',
+          left: 'var(--canvas-margin)',
+          right: 'var(--canvas-margin)',
+        }}
       >
-        <SaleTicker text={marqueeText} />
-
-        <div className="max-w-full mx-auto flex items-center justify-between border-b border-white/10">
-          {/* Left: Brand */}
-          <div className="flex items-center">
-            <div className="p-6 border-r border-white/10">
-              <a href="/">
-                <h1 className="text-2xl font-black tracking-tighter-x hover:text-enark-red transition-colors">
-                  {brandName}
-                  <span className="text-enark-red">.</span>
-                </h1>
-              </a>
+        <div className="max-w-full mx-auto grid grid-cols-3 items-center h-20">
+          {/* Left: Links */}
+          <div className="flex items-center h-full">
+            <div className="hidden md:flex items-center gap-6 px-8 h-full">
+              <a href="/shop" className={`text-[11px] font-medium tracking-normal transition-colors ${textColor} ${hoverColor}`}>New in</a>
+              <a href="/shop" className={`text-[11px] font-medium tracking-normal transition-colors ${textColor} ${hoverColor}`}>Collections</a>
             </div>
+          </div>
 
+          {/* Center: Brand */}
+          <div className="flex justify-center items-center p-4 md:p-6 h-full">
+            <a href="/">
+              <h1 className={`text-2xl font-black tracking-tighter transition-colors ${textColor} ${hoverColor}`}>
+                {brandName}
+              </h1>
+            </a>
           </div>
 
           {/* Right: Interface */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-end h-full px-4 md:px-8 gap-5 md:gap-6">
             <button 
               onClick={toggleGlobalMute}
-              className="p-8 border-l border-white/10 hover:bg-enark-red transition-colors group"
+              className={`transition-colors group relative ${hoverColor}`}
               title={isGlobalMuted ? "Enable Sound" : "Mute Sound"}
             >
-              {isGlobalMuted ? <VolumeX size={18} className="group-hover:text-white text-enark-red" /> : <Volume2 size={18} className="group-hover:text-white" />}
+              {isGlobalMuted ? <VolumeX size={16} strokeWidth={1.5} className={textColor} /> : <Volume2 size={16} strokeWidth={1.5} className={textColor} />}
             </button>
+
+            <ThemeToggle />
 
             <button 
               onClick={() => { playClick(); setIsSearchOpen(true); }}
-              className="p-8 border-l border-white/10 hover:bg-enark-red transition-colors group"
+              className={`transition-colors group ${hoverColor}`}
             >
-              <SearchIcon size={18} className="group-hover:text-white" />
+              <SearchIcon size={16} strokeWidth={1.5} className={textColor} />
             </button>
+
+            <a 
+              href={authItem.href}
+              className={`transition-colors group flex items-center justify-center ${hoverColor}`}
+            >
+              <User size={16} strokeWidth={1.5} className={textColor} />
+            </a>
 
             <motion.button 
               id="bag-target" 
@@ -141,18 +170,21 @@ export default function Header() {
               drag
               dragSnapToOrigin
               whileDrag={{ scale: 1.2, zIndex: 100 }}
-              className="p-8 border-l border-white/10 hover:bg-enark-red transition-colors group relative cursor-grab active:cursor-grabbing touch-none"
+              className={`transition-colors group relative cursor-grab active:cursor-grabbing touch-none ${hoverColor}`}
             >
-              <ShoppingBag size={18} className="group-hover:text-white pointer-events-none" />
-              <span className="absolute top-4 right-4 text-[11px] font-black bg-enark-red text-white w-4 h-4 flex items-center justify-center rounded-none border border-black z-20 pointer-events-none">
-                {items.length}
-              </span>
+              <ShoppingBag size={16} strokeWidth={1.5} className={`${textColor} pointer-events-none`} />
+              {items.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 text-[9px] font-black bg-black text-white w-3.5 h-3.5 flex items-center justify-center rounded-full z-20 pointer-events-none">
+                  {items.length}
+                </span>
+              )}
             </motion.button>
+
             <button 
-              className="p-8 border-l border-white/10"
+              className={`transition-colors group ${hoverColor}`}
               onClick={() => { playClick(); toggleMenu(); }}
             >
-              {isOpen ? <X size={20} /> : <Menu size={20} />}
+              {isOpen ? <X size={16} strokeWidth={1.5} className={textColor} /> : <Menu size={16} strokeWidth={1.5} className={textColor} />}
             </button>
           </div>
         </div>

@@ -20,7 +20,7 @@ export function useAudio() {
     return localStorage.getItem('sound_disabled') === 'true';
   }, []);
 
-  // A short, mechanical click — used for button presses & filter switches
+  // A soft, tactile click — used for button presses & filter switches
   const playClick = useCallback(() => {
     if (isMuted()) return;
     try {
@@ -31,15 +31,17 @@ export function useAudio() {
       oscillator.connect(gainNode);
       gainNode.connect(context.destination);
 
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(800, context.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(200, context.currentTime + 0.04);
+      // Changed from 'square' to 'sine' for a smoother, softer pulse
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(600, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(300, context.currentTime + 0.06);
 
-      gainNode.gain.setValueAtTime(0.08, context.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.04);
+      // Reduced gain for a subtler presence
+      gainNode.gain.setValueAtTime(0.04, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.06);
 
       oscillator.start(context.currentTime);
-      oscillator.stop(context.currentTime + 0.05);
+      oscillator.stop(context.currentTime + 0.06);
     } catch {}
   }, [getCtx]);
 
@@ -54,11 +56,12 @@ export function useAudio() {
       gainNode.connect(context.destination);
 
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(60, context.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(40, context.currentTime + 0.3);
+      oscillator.frequency.setValueAtTime(50, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(35, context.currentTime + 0.4);
 
-      gainNode.gain.setValueAtTime(0.06, context.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.35);
+      // Reduced gain from 0.06 to 0.03
+      gainNode.gain.setValueAtTime(0.03, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.4);
 
       oscillator.start(context.currentTime);
       oscillator.stop(context.currentTime + 0.4);
@@ -69,17 +72,17 @@ export function useAudio() {
     if (isMuted()) return;
     try {
       const context = getCtx();
-      [880, 1100].forEach((freq, i) => {
+      [660, 880].forEach((freq, i) => {
         const osc = context.createOscillator();
         const gain = context.createGain();
         osc.connect(gain);
         gain.connect(context.destination);
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, context.currentTime + i * 0.08);
-        gain.gain.setValueAtTime(0.06, context.currentTime + i * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + i * 0.08 + 0.15);
-        osc.start(context.currentTime + i * 0.08);
-        osc.stop(context.currentTime + i * 0.08 + 0.15);
+        osc.frequency.setValueAtTime(freq, context.currentTime + i * 0.1);
+        gain.gain.setValueAtTime(0.03, context.currentTime + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + i * 0.1 + 0.2);
+        osc.start(context.currentTime + i * 0.1);
+        osc.stop(context.currentTime + i * 0.1 + 0.2);
       });
     } catch {}
   }, [getCtx]);
@@ -92,9 +95,11 @@ export function useAudio() {
       const gain = context.createGain();
       osc.connect(gain);
       gain.connect(context.destination);
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(100, context.currentTime);
-      gain.gain.setValueAtTime(0.1, context.currentTime);
+      // Changed from 'sawtooth' (harsh) to 'triangle' (softer)
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, context.currentTime);
+      osc.frequency.linearRampToValueAtTime(80, context.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.05, context.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.2);
       osc.start(context.currentTime);
       osc.stop(context.currentTime + 0.2);
@@ -111,16 +116,36 @@ export function useAudio() {
       gain.connect(context.destination);
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(80, context.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1400, context.currentTime + 1.8);
+      osc.frequency.setValueAtTime(60, context.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1000, context.currentTime + 2.0);
       
-      gain.gain.setValueAtTime(0.12, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1.8);
+      // Reduced gain
+      gain.gain.setValueAtTime(0.05, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 2.0);
       
       osc.start(context.currentTime);
-      osc.stop(context.currentTime + 1.8);
+      osc.stop(context.currentTime + 2.0);
     } catch {}
   }, [getCtx]);
 
-  return { playClick, playHum, playSuccess, playError, playWarp };
+  const playGlitch = useCallback(() => {
+    if (isMuted()) return;
+    try {
+      const context = getCtx();
+      for (let i = 0; i < 5; i++) {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.connect(gain);
+        gain.connect(context.destination);
+        osc.type = Math.random() > 0.5 ? 'square' : 'sine';
+        osc.frequency.setValueAtTime(Math.random() * 2000 + 100, context.currentTime + i * 0.05);
+        gain.gain.setValueAtTime(0.01, context.currentTime + i * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + i * 0.05 + 0.05);
+        osc.start(context.currentTime + i * 0.05);
+        osc.stop(context.currentTime + i * 0.05 + 0.05);
+      }
+    } catch {}
+  }, [getCtx]);
+
+  return { playClick, playHum, playSuccess, playError, playWarp, playGlitch };
 }

@@ -1,98 +1,80 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { Cashfree } from '@/lib/cashfree';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function POST(req: Request) {
+async function finalizeOrder(orderId: string, paymentId: string, items?: any[], appliedPromoCode?: string) {
+  // 1. Update order status
+  const { error: updateError } = await supabase
+    .from('orders')
+    .update({ 
+      status: 'paid', 
+      razorpay_payment_id: paymentId, // Using existing column name
+      updated_at: new Date().toISOString()
+    })
+    .eq('razorpay_order_id', orderId);
+
+  if (updateError) throw updateError;
+
+  // 2. Inventory Deduction
+  if (items && Array.isArray(items)) {
+    for (const item of items) {
+      if (!item.variantId) continue;
+      const { data: variant } = await supabase.from('variants').select('stock_quantity').eq('id', item.variantId).single();
+      if (variant) {
+        await supabase.from('variants').update({ stock_quantity: Math.max(0, variant.stock_quantity - item.quantity) }).eq('id', item.variantId);
+      }
+    }
+  }
+
+  // 3. Burn Promo Code
+  if (appliedPromoCode) {
+    await supabase.from('operative_offers').update({ used: true }).eq('code', appliedPromoCode).eq('is_single_use', true);
+  }
+}
+
+export async function GET(req: Request) {
   try {
-    const { 
-      razorpay_order_id, 
-      razorpay_payment_id, 
-      razorpay_signature,
-      dbOrderId,
-      items, // Array of items from the cart
-      appliedPromoCode
-    } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const orderId = searchParams.get('order_id');
 
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
-      .update(body.toString())
-      .digest('hex');
+    if (!orderId) return NextResponse.json({ error: 'Missing order_id' }, { status: 400 });
 
-    const isAuthentic = expectedSignature === razorpay_signature;
+    const response = await Cashfree.PGOrderFetchPayments("2023-08-01", orderId);
+    const payments = response.data;
 
-    if (!isAuthentic) {
-      return NextResponse.json({ error: 'Invalid Signature' }, { status: 400 });
-    }
+    const successfulPayment = payments.find((p: any) => p.payment_status === 'SUCCESS');
 
-    // 1. Update order status in Supabase
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({ 
-        status: 'paid', 
-        razorpay_payment_id,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', dbOrderId);
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    // 2. Inventory Deduction Logic
-    if (items && Array.isArray(items)) {
-      for (const item of items) {
-        if (!item.variantId) continue;
-        
-        // Fetch current stock
-        const { data: variant, error: fetchError } = await supabase
-          .from('variants')
-          .select('stock_quantity')
-          .eq('id', item.variantId)
-          .single();
-          
-        if (fetchError || !variant) {
-          console.error(`Failed to fetch stock for variant ${item.variantId}:`, fetchError);
-          continue;
-        }
-        
-        // Calculate new stock (prevent negative stock)
-        const newStock = Math.max(0, variant.stock_quantity - item.quantity);
-        
-        // Update stock
-        const { error: stockUpdateError } = await supabase
-          .from('variants')
-          .update({ stock_quantity: newStock })
-          .eq('id', item.variantId);
-          
-        if (stockUpdateError) {
-          console.error(`Failed to update stock for variant ${item.variantId}:`, stockUpdateError);
-        }
+    if (successfulPayment) {
+      // Check if already paid in DB to avoid double processing
+      const { data: order } = await supabase.from('orders').select('status').eq('razorpay_order_id', orderId).single();
+      
+      if (order && order.status !== 'paid') {
+        await finalizeOrder(orderId, successfulPayment.cf_payment_id.toString());
       }
+      
+      return NextResponse.json({ success: true, status: 'PAID' });
     }
 
-    // 3. Burn Promo Code Logic (Respect is_single_use setting)
-    if (appliedPromoCode) {
-      const { error: burnError } = await supabase
-        .from('operative_offers')
-        .update({ used: true })
-        .eq('code', appliedPromoCode)
-        .eq('is_single_use', true); // Only burn if it's explicitly a single-use code
-        
-      if (burnError) {
-        console.error(`Failed to burn promo code ${appliedPromoCode}:`, burnError);
-      }
-    }
-
-    return NextResponse.json({ success: true }, { status: 200 });
-
+    return NextResponse.json({ success: false, status: 'PENDING' });
   } catch (error: any) {
-    console.error('Verification error:', error);
+    console.error('Verify GET error:', error.response?.data || error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  // Legacy Razorpay POST verify (can be removed if no longer needed)
+  try {
+    const { razorpay_order_id, razorpay_payment_id, dbOrderId, items, appliedPromoCode } = await req.json();
+    await finalizeOrder(razorpay_order_id, razorpay_payment_id, items, appliedPromoCode);
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

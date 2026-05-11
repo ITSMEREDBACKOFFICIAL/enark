@@ -26,10 +26,11 @@ export default function RegistryPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-black text-white mono selection:bg-enark-red">
+    <main className="min-h-screen bg-background text-foreground mono selection:bg-enark-red">
       <Header />
+
       
-      <div className="pt-48 px-6 md:px-12 border-b border-white/10 pb-12">
+      <div className="pt-48 px-6 md:px-12 border-b border-foreground/10 pb-12">
         <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-enark-red">
@@ -38,8 +39,8 @@ export default function RegistryPage() {
             </div>
             <h1 className="text-7xl font-black tracking-tighter-x uppercase">Central_Registry</h1>
           </div>
-          <div className="bg-white/5 border border-white/10 p-4 px-8 space-y-1 text-right">
-             <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest">SECURED_ASSETS</p>
+          <div className="bg-foreground/5 border border-foreground/10 p-4 px-8 space-y-1 text-right">
+             <p className="text-[11px] font-bold text-foreground/60 uppercase tracking-widest">SECURED_ASSETS</p>
              <p className="text-xl font-black text-enark-red leading-none">{products.length.toString().padStart(3, '0')}</p>
           </div>
         </div>
@@ -52,14 +53,14 @@ export default function RegistryPage() {
                FETCHING_REGISTRY_DATA...
              </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10 border border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-foreground/10 border border-foreground/10">
               {products.map((product, i) => (
                 <Link key={product.id} href={`/shop?product_id=${product.id}`}>
                   <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     transition={{ delay: (i % 6) * 0.1 }}
-                    className="bg-black p-8 group relative overflow-hidden flex flex-col justify-between aspect-square cursor-pointer"
+                    className="bg-background p-8 group relative overflow-hidden flex flex-col justify-between aspect-square cursor-pointer"
                   >
                     <div className="space-y-4 relative z-10">
                       <div className="flex justify-between items-start">
@@ -67,9 +68,9 @@ export default function RegistryPage() {
                           <p className="text-[11px] font-black text-enark-red uppercase tracking-widest">{product.category}</p>
                           <h3 className="text-xl font-black uppercase tracking-tighter leading-none">{product.name}</h3>
                         </div>
-                        <span className="text-[11px] font-bold text-white/60">EN-{product.id.slice(0, 8)}</span>
+                        <span className="text-[11px] font-bold text-foreground/60">EN-{product.id.slice(0, 8)}</span>
                       </div>
-                      <div className="w-12 h-1 bg-white/10" />
+                      <div className="w-12 h-1 bg-foreground/10" />
                     </div>
 
                     <div className="absolute inset-0 opacity-40 md:opacity-20 group-hover:opacity-60 transition-opacity duration-1000 grayscale-0 md:grayscale">
@@ -77,7 +78,7 @@ export default function RegistryPage() {
                     </div>
 
                     <div className="space-y-6 relative z-10">
-                      <div className="grid grid-cols-2 gap-4 text-xs font-bold text-white/60 uppercase tracking-widest">
+                      <div className="grid grid-cols-2 gap-4 text-xs font-bold text-foreground/60 uppercase tracking-widest">
                         <div>
                           <p>Status: {product.is_active ? 'STABLE' : 'DECOMMISSIONED'}</p>
                           <p>Hash: {product.id.slice(-12)}</p>
@@ -88,8 +89,8 @@ export default function RegistryPage() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-4">
-                        <p className="text-2xl font-black text-white group-hover:text-enark-red transition-colors mono">₹{product.base_price.toLocaleString()}</p>
-                        <div className="flex items-center gap-2 text-[11px] font-black text-white/60 group-hover:text-white transition-colors">
+                        <p className="text-2xl font-black text-foreground group-hover:text-enark-red transition-colors mono">₹{product.base_price.toLocaleString()}</p>
+                        <div className="flex items-center gap-2 text-[11px] font-black text-foreground/60 group-hover:text-foreground transition-colors">
                             <Lock size={10} />
                             <span>VIEW_DATA</span>
                         </div>

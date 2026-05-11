@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,12 +10,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#000000",
-        foreground: "#FFFFFF",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         enark: {
-          red: "var(--enark-red, #FF0000)",
-          obsidian: "#000000",
-          white: "#FFFFFF",
+          red: "var(--enark-red, #FF2A2A)",
+          base: "var(--background)",
+          fg: "var(--foreground)",
+          surface: "var(--card-bg, #FFFFFF)",
+          border: "var(--border)",
         }
       },
       fontFamily: {
@@ -27,6 +30,7 @@ const config: Config = {
       animation: {
         "fade-in": "fadeIn 0.8s ease-out forwards",
         "slide-up": "slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "marquee": "marquee 25s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -37,8 +41,15 @@ const config: Config = {
           "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
       },
     },
+  },
+  future: {
+    hoverOnlyWhenSupported: true,
   },
   plugins: [],
 };

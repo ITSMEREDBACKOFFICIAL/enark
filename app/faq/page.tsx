@@ -59,8 +59,9 @@ export default function FAQPage() {
   const [isSimple, setIsSimple] = useState(false);
 
   return (
-    <main className="min-h-screen bg-black text-white mono">
+    <main className="min-h-screen bg-background text-foreground mono">
       <Header />
+
       <div className="pt-48 pb-24 px-6 md:px-12 selection:bg-enark-red selection:text-white">
         <div className="max-w-4xl mx-auto space-y-20">
           
@@ -76,11 +77,11 @@ export default function FAQPage() {
               </h1>
               <button
                 onClick={() => setIsSimple(!isSimple)}
-                className={`shrink-0 flex items-center gap-3 px-6 py-4 border transition-all ${isSimple ? 'bg-enark-red border-enark-red' : 'border-white/10 hover:border-white/40'}`}
+                className={`shrink-0 flex items-center gap-3 px-6 py-4 border transition-all ${isSimple ? 'bg-enark-red border-enark-red' : 'border-foreground/10 hover:border-foreground/40'}`}
               >
                 <Languages size={16} />
                 <span className="text-xs font-black uppercase tracking-widest whitespace-nowrap">
-                  {isSimple ? 'Re-Encrypt' : 'Decrypt to Plain English'}
+                  {isSimple ? 'Re-Encrypt' : 'Decrypt'}
                 </span>
               </button>
             </div>
@@ -96,12 +97,12 @@ export default function FAQPage() {
                   <h2 className="text-xs font-black uppercase tracking-[0.4em] text-white/60">{category.category}</h2>
                 </div>
 
-                <div className="divide-y divide-white/5 border border-white/10 bg-[#050505]">
+                <div className="divide-y divide-foreground/5 border border-foreground/10 bg-background">
                   {category.questions.map((item) => (
                     <div key={item.q} className="group">
                       <button 
                         onClick={() => setActiveItem(activeItem === item.q ? null : item.q)}
-                        className="w-full p-8 flex items-center justify-between text-left hover:bg-white/5 transition-all"
+                        className="w-full p-8 flex items-center justify-between text-left hover:bg-foreground/5 transition-all"
                       >
                         <span className="text-sm font-black uppercase tracking-tighter group-hover:text-enark-red transition-colors">{item.q}</span>
                         {activeItem === item.q ? <Minus size={18} className="text-enark-red" /> : <Plus size={18} className="text-white/60" />}
@@ -131,7 +132,7 @@ export default function FAQPage() {
           {/* Footer Uplink */}
           <div className="pt-20 border-t border-white/10 flex flex-col items-center text-center gap-8">
              <p className="text-xs font-black uppercase tracking-widest text-white/60">Still have unanswered queries?</p>
-             <Link href="https://wa.me/910000000000" className="bg-white text-black px-12 py-6 font-black uppercase tracking-widest hover:bg-enark-red hover:text-white transition-all">
+             <Link href="https://wa.me/910000000000" className="bg-foreground text-background px-12 py-6 font-black uppercase tracking-widest hover:bg-enark-red hover:text-white transition-all">
                Initialize_Direct_Uplink
              </Link>
           </div>

@@ -6,8 +6,8 @@ import { useCart } from '@/store/useCart';
 import { useRecentlyViewed } from '@/store/useRecentlyViewed';
 import { supabase } from '@/lib/supabase';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
-import ProductDetails from '../product/ProductDetails';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Product {
   id: string;
@@ -29,8 +29,7 @@ interface Product {
 
 export default function ShiftingHorizon() {
   const [productsByCategory, setProductsByCategory] = useState<Record<string, Product[]>>({});
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const router = useRouter();
   const addItem = useCart((state) => state.addItem);
   const addRecentlyViewed = useRecentlyViewed((state) => state.addItem);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -92,8 +91,7 @@ export default function ShiftingHorizon() {
           products={products} 
           index={index}
           onViewDetails={(product: Product) => {
-            setSelectedProduct(product);
-            setIsDetailsOpen(true);
+            router.push(`/product/${product.slug}`);
             addRecentlyViewed({
               id: product.id,
               name: product.name,
@@ -118,11 +116,6 @@ export default function ShiftingHorizon() {
         />
       ))}
 
-      <ProductDetails 
-        isOpen={isDetailsOpen} 
-        onClose={() => setIsDetailsOpen(false)} 
-        product={selectedProduct} 
-      />
     </div>
   );
 }

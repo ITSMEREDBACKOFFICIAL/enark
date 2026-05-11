@@ -3,14 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import FoilBag from '@/components/home/FoilBag';
+import CinematicGallery from '@/components/home/CinematicGallery';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { useMenuStore } from '@/store/useMenuStore';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Instagram, Ruler } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import MinimalGuide from '@/components/ui/MinimalGuide';
 
 import { useAudio } from '@/hooks/useAudio';
 export default function Home() {
@@ -33,24 +34,9 @@ export default function Home() {
     // Register ScrollTrigger client-side
     gsap.registerPlugin(ScrollTrigger);
 
-    // Initialize Lenis smooth scroll
-    const Lenis = require('lenis').default;
-    const lenis = new Lenis({
-      duration: 1.4,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      touchMultiplier: 2,
-    });
-
-    lenis.on('scroll', ScrollTrigger.update);
-
-    gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
-    });
-
-    gsap.ticker.lagSmoothing(0);
-
     // GSAP staggered reveal for text elements
     const ctx = gsap.context(() => {
+      // 1. Staggered reveal for section text
       gsap.fromTo(
         '.reveal-text',
         { opacity: 0, y: 30 },
@@ -67,96 +53,117 @@ export default function Home() {
           },
         }
       );
+
+      // 2. Unique Hero Shrink Animation (Enhanced with 3D and Blur)
+      gsap.to('.hero-gallery-wrapper', {
+        scale: 0.8,
+        rotateX: 10,
+        filter: 'blur(10px) grayscale(0.5)',
+        borderRadius: '48px',
+        opacity: 0.3,
+        scrollTrigger: {
+          trigger: 'main',
+          start: 'top top',
+          end: '+=100%',
+          scrub: true,
+        }
+      });
+
+      // 3. Fade out CTA button
+      gsap.to('.hero-cta', {
+        opacity: 0,
+        y: -20,
+        scrollTrigger: {
+          trigger: 'main',
+          start: 'top top',
+          end: '+=30%',
+          scrub: true,
+        }
+      });
     }, containerRef);
 
     return () => {
       ctx.revert();
-      lenis.destroy();
-      gsap.ticker.remove(lenis.raf);
     };
   }, []);
 
   return (
-    <main ref={containerRef} className="relative min-h-screen bg-[#000000] text-[#FFFFFF] overflow-x-hidden selection:bg-[#FF0000] selection:text-white mono">
+    <main ref={containerRef} className="relative min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-enark-red selection:text-white mono">
+      {/* Global Grain Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+      
+      {/* System Status Indicator */}
+      <div className="fixed top-24 left-6 z-[50] flex flex-col gap-1 opacity-40 hover:opacity-100 transition-opacity hidden md:flex">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-enark-red animate-pulse" />
+          <span className="text-[8px] font-black tracking-[0.2em]">ENARK_OS // OPTIMAL</span>
+        </div>
+        <span className="text-[7px] text-foreground/50 tracking-[0.1em]">NODE_SYNC: ACTIVE</span>
+      </div>
+
       <Header />
       
-      {/* 3D background removed for performance */}
+      {/* Hero Section */}
+      <section className="relative h-[200vh] w-full z-10 bg-transparent">
+        <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden">
+          {/* Cinematic Floating Gallery Wrapper */}
+          <div className="hero-gallery-wrapper absolute inset-0 overflow-hidden origin-center">
+            <CinematicGallery />
+          </div>
 
-      {/* Hero Section - Re-architected for premium individuality */}
-      <section className="relative h-screen w-full flex flex-col items-center justify-center px-6 z-10 bg-[#000000] overflow-hidden">
-        
-        {/* Abstract Vertical NRK Textured Focus */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center justify-center font-black select-none transform -translate-y-12"
-        >
-          <span className="text-[18vw] md:text-[12vw] leading-[0.75] font-black uppercase bg-[url('/textures/carbon.png')] bg-cover bg-center bg-clip-text text-transparent select-none drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">N</span>
-          <span className="text-[18vw] md:text-[12vw] leading-[0.75] font-black uppercase bg-[url('/textures/carbon.png')] bg-cover bg-center bg-clip-text text-transparent select-none drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">R</span>
-          <span className="text-[18vw] md:text-[12vw] leading-[0.75] font-black uppercase bg-[url('/textures/carbon.png')] bg-cover bg-center bg-clip-text text-transparent select-none drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">K</span>
-        </motion.div>
-
-        {/* Unified Bottom Layout Control Block */}
-        <div className="absolute bottom-12 left-0 w-full flex flex-col md:flex-row items-center justify-between px-6 md:px-16 gap-6 md:gap-0 z-20">
-          
-          {/* Action Node (Left side cluster) */}
+          {/* Minimalist Scroll Indicator */}
           <motion.div 
-            initial={{ x: -30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.6, duration: 1.2 }}
-            className="flex items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: [0.2, 0.5, 0.2],
+              x: [0, 5, 0]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="hidden md:flex absolute bottom-12 right-12 items-center gap-4 z-20"
           >
-            {/* India Badge */}
-            <div className="flex items-center gap-1.5 border border-white/20 bg-black/50 backdrop-blur-sm px-3.5 py-2 rounded-full text-[10px] font-black tracking-widest text-white/80 select-none cursor-pointer hover:bg-white/10 transition-all">
-              <ChevronDown size={12} className="text-white/60" />
-              <span>🇮🇳 INDIA</span>
-            </div>
+            <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-enark-red shadow-[0_0_10px_rgba(220,38,38,0.5)]" />
+            <span className="text-[10px] font-black tracking-[0.5em] uppercase text-white/40">Scroll</span>
+          </motion.div>
 
-            {/* Enter System Button */}
+          {/* Fit Labs Quick Access Overlay */}
+          <div className="hidden md:block absolute bottom-12 left-12 z-30">
+            <Link 
+              href="/labs"
+              className="flex items-center gap-4 group"
+              onClick={() => playClick()}
+            >
+              <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center backdrop-blur-md bg-white/5 group-hover:border-enark-red group-hover:bg-enark-red/10 transition-all">
+                <Ruler size={16} className="text-white group-hover:text-enark-red transition-colors" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black tracking-[0.3em] text-white/40 uppercase">NEURAL_CALIBRATION</span>
+                <span className="text-[10px] font-black tracking-widest text-white uppercase group-hover:text-enark-red transition-colors">FIT_LABS</span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Unified Bottom Layout Control Block */}
+          <div className="hero-cta absolute bottom-12 left-0 w-full flex justify-center items-center z-20 px-6">
             <button 
               onClick={handleWarp}
-              className="px-6 py-2 bg-[#FF0000] text-white font-sans font-black text-[10px] tracking-[0.3em] rounded-full hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(255,0,0,0.3)]"
+              className="group relative w-full max-w-xs md:max-w-none md:w-auto px-12 py-4 bg-white text-black text-[11px] font-black tracking-[0.4em] uppercase overflow-hidden hover:text-white transition-colors duration-500 shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
             >
-              ENTER_SYSTEM
+              <span className="relative z-10">Shop Now</span>
+              <div className="absolute inset-0 bg-enark-red translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
             </button>
-          </motion.div>
-
-          {/* Navigation Constellation (Right side cluster) */}
-          <motion.div 
-            initial={{ x: 30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.8, duration: 1.2 }}
-            className="flex flex-wrap items-center justify-center md:justify-end gap-6 md:gap-10"
-          >
-            {/* Labs */}
-            <Link href="/labs" className="flex items-baseline gap-1.5 group cursor-pointer">
-              <span className="text-[9px] font-mono font-light text-white/40 tracking-wider group-hover:text-[#FF0000] transition-colors">(03)</span>
-              <span className="font-sans font-black text-2xl md:text-3xl tracking-tighter text-white group-hover:text-white/70 transition-colors uppercase">labs</span>
-            </Link>
-
-            {/* Signup/In */}
-            <Link href="/login" className="flex items-baseline gap-1.5 group cursor-pointer">
-              <span className="text-[9px] font-mono font-light text-white/40 tracking-wider group-hover:text-[#FF0000] transition-colors">(01)</span>
-              <span className="font-sans font-black text-2xl md:text-3xl tracking-tighter text-white group-hover:text-white/70 transition-colors uppercase">login</span>
-            </Link>
-
-            {/* Instagram */}
-            <a href="https://instagram.com/enark" target="_blank" rel="noopener noreferrer" className="flex items-baseline gap-1.5 group cursor-pointer">
-              <span className="text-[9px] font-mono font-light text-white/40 tracking-wider group-hover:text-[#FF0000] transition-colors">(01)</span>
-              <span className="font-sans font-black text-2xl md:text-3xl tracking-tighter text-white group-hover:text-white/70 transition-colors uppercase">social</span>
-            </a>
-          </motion.div>
-
+          </div>
         </div>
       </section>
 
       {/* Lookbook Body - Section 1 */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 md:px-12 py-32 z-10 bg-[#000000] overflow-hidden">
-        <FoilBag />
+      <section className="relative min-h-screen flex items-center justify-center px-6 md:px-12 py-32 z-20 bg-background overflow-hidden border-t border-foreground/5 shadow-[0_-20px_50px_rgba(0,0,0,0.05)]">
         <div className="max-w-4xl mx-auto text-center reveal-text">
-          <p className="font-serif italic text-4xl md:text-7xl leading-tight font-light text-white/90">
-            "redefining the standard.<br />welcome to enark."
+          <p className="font-serif italic text-4xl md:text-7xl leading-tight font-light text-foreground/90">
+            "redefining the standard."
           </p>
         </div>
       </section>
@@ -169,22 +176,22 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[1000] bg-black flex items-center justify-center overflow-hidden pointer-events-auto"
+            className="fixed inset-0 z-[1000] bg-background flex items-center justify-center overflow-hidden pointer-events-auto"
           >
             {/* Swirling space warp elements */}
             <motion.div 
               initial={{ scale: 0.1, rotate: 0 }}
               animate={{ scale: 20, rotate: 1080 }}
               transition={{ duration: 2, ease: "easeInOut" }}
-              className="w-40 h-40 rounded-full bg-gradient-to-r from-[#FF0000] via-purple-900 to-[#000000] blur-3xl opacity-90"
+              className="w-40 h-40 rounded-full bg-gradient-to-r from-enark-red via-background to-background blur-3xl opacity-90"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1.5 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,0,0,0.1),transparent_70%)] pointer-events-none animate-pulse"
+              className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,42,42,0.1),transparent_70%)] pointer-events-none animate-pulse"
             />
-            <div className="absolute font-sans font-black text-white text-[10px] tracking-[0.5em] uppercase opacity-30">
+            <div className="absolute font-sans font-black text-foreground text-[10px] tracking-[0.5em] uppercase opacity-30">
               SYNCHRONIZING SYSTEM...
             </div>
           </motion.div>

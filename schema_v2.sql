@@ -64,7 +64,15 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS fulfillment_status TEXT DEFAULT 'pen
 -- 8. SYSTEM CONFIG (Storefront Text Switcher)
 CREATE TABLE app_config (
     id TEXT PRIMARY KEY DEFAULT 'main',
-    marquee_text TEXT DEFAULT 'ALIENKIND // SYSTEM ONLINE // NEW DROP LIVE',
+    brand_name TEXT DEFAULT 'ENARK',
+    primary_color TEXT DEFAULT '#DC2626',
+    marquee_text TEXT DEFAULT 'ENARK // SYSTEM ONLINE // NEW DROP LIVE',
     announcement_banner TEXT DEFAULT 'FREE SHIPPING ON ORDERS OVER 5000',
-    is_maintenance_mode BOOLEAN DEFAULT false
+    hero_title TEXT DEFAULT 'THE_HORIZON_COLLECTION',
+    hero_subtitle TEXT DEFAULT 'SYNERGETIC_STREETWEAR_SYSTEMS',
+    footer_text TEXT DEFAULT 'ENARK // QUANTUM_RETAIL_OS_V4',
+    free_shipping_threshold NUMERIC DEFAULT 5000,
+    cod_enabled BOOLEAN DEFAULT true,
+    is_maintenance_mode BOOLEAN DEFAULT false,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

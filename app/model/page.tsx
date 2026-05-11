@@ -6,6 +6,8 @@ import { Shield, Sparkles, Loader2, ArrowRight, User, Mail, Sparkle } from 'luci
 
 export default function ModelForUsPage() {
   const [step, setStep] = useState<'idle' | 'form' | 'submitting' | 'success'>('idle');
+  const [playRequested, setPlayRequested] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,34 +21,64 @@ export default function ModelForUsPage() {
   const playerRef = useRef<any>(null);
 
   useEffect(() => {
-    // Load YouTube API script
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    let isMounted = true;
 
-    (window as any).onYouTubeIframeAPIReady = () => {
-      playerRef.current = new (window as any).YT.Player('youtube-player', {
-        height: '0',
-        width: '0',
-        videoId: 'X_0t46Z0VbE', // Kiasmos - Looped
-        playerVars: {
-          autoplay: 0, // Wait for user activation click
-          loop: 1,
-          playlist: 'X_0t46Z0VbE',
-          controls: 0,
-          showinfo: 0,
-          modestbranding: 1
-        },
-        events: {
-          onReady: () => console.log('Player active')
-        }
-      });
+    const initPlayer = () => {
+      if (!isMounted || !document.getElementById('youtube-player')) return;
+      
+      try {
+        playerRef.current = new (window as any).YT.Player('youtube-player', {
+          height: '0',
+          width: '0',
+          videoId: 'X_0t46Z0VbE', // Kiasmos - Looped
+          playerVars: {
+            autoplay: 0,
+            loop: 1,
+            playlist: 'X_0t46Z0VbE',
+            controls: 0,
+            showinfo: 0,
+            modestbranding: 1
+          },
+          events: {
+            onReady: () => {
+              if (isMounted) {
+                setIsPlayerReady(true);
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error("YT Player init error", e);
+      }
     };
 
+    const loadYT = () => {
+      if ((window as any).YT && (window as any).YT.Player) {
+        initPlayer();
+        return;
+      }
+
+      if (!document.getElementById('youtube-api-script')) {
+        const tag = document.createElement('script');
+        tag.id = 'youtube-api-script';
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+      }
+
+      const interval = setInterval(() => {
+        if ((window as any).YT && (window as any).YT.Player) {
+          clearInterval(interval);
+          initPlayer();
+        }
+      }, 100);
+    };
+
+    loadYT();
+
     return () => {
+      isMounted = false;
       try {
-        if (playerRef.current) {
+        if (playerRef.current && typeof playerRef.current.destroy === 'function') {
           playerRef.current.destroy();
         }
       } catch (e) {
@@ -55,20 +87,24 @@ export default function ModelForUsPage() {
     };
   }, []);
 
-  const handleJoinClick = () => {
-    setStep('form');
-    try {
-      if (playerRef.current) {
+  useEffect(() => {
+    if (isPlayerReady && playRequested && playerRef.current && typeof playerRef.current.playVideo === 'function') {
+      try {
         playerRef.current.playVideo();
         playerRef.current.setVolume(40);
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
     }
+  }, [isPlayerReady, playRequested]);
+
+  const handleJoinClick = () => {
+    setStep('form');
+    setPlayRequested(true);
   };
 
   const toggleMute = () => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || typeof playerRef.current.mute !== 'function' || typeof playerRef.current.unMute !== 'function') return;
     if (isMuted) {
       playerRef.current.unMute();
       setIsMuted(false);
