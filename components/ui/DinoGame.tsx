@@ -10,12 +10,13 @@ export default function DinoGame() {
   const [gameState, setGameState] = useState<GameState>('START');
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
+  const gameStateRef = useRef<GameState>('START');
 
   // Game constants
   const GRAVITY = 0.6;
   const JUMP_FORCE = -12;
   const INITIAL_SPEED = 5;
-  const SPEED_INCREMENT = 0.001;
+  const SPEED_INCREMENT = 0.002;
   const MAX_SPEED = 15;
 
   // Refs for game state (to avoid re-renders during loop)
@@ -23,8 +24,8 @@ export default function DinoGame() {
     player: {
       y: 0,
       vy: 0,
-      width: 40,
-      height: 40,
+      width: 30,
+      height: 30,
       isJumping: false,
       frame: 0,
       frameCount: 0,
@@ -42,6 +43,7 @@ export default function DinoGame() {
   }, []);
 
   const startGame = () => {
+    gameStateRef.current = 'PLAYING';
     setGameState('PLAYING');
     setScore(0);
     gameRef.current = {
@@ -60,14 +62,18 @@ export default function DinoGame() {
       nextObstacleDist: 400,
       frameId: 0,
     };
-    requestAnimationFrame(gameLoop);
+    // Ensure canvas is ready
+    if (canvasRef.current) {
+      cancelAnimationFrame(gameRef.current.frameId);
+      gameRef.current.frameId = requestAnimationFrame(gameLoop);
+    }
   };
 
   const jump = () => {
-    if (!gameRef.current.player.isJumping && gameState === 'PLAYING') {
+    if (!gameRef.current.player.isJumping && gameStateRef.current === 'PLAYING') {
       gameRef.current.player.vy = JUMP_FORCE;
       gameRef.current.player.isJumping = true;
-    } else if (gameState !== 'PLAYING') {
+    } else if (gameStateRef.current !== 'PLAYING') {
       startGame();
     }
   };
@@ -80,10 +86,15 @@ export default function DinoGame() {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState]);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      cancelAnimationFrame(gameRef.current.frameId);
+    };
+  }, []);
 
   const gameLoop = () => {
+    if (gameStateRef.current !== 'PLAYING') return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -115,7 +126,7 @@ export default function DinoGame() {
     }
 
     // Update Score
-    gameRef.current.score += 0.1;
+    gameRef.current.score += 0.15;
     setScore(Math.floor(gameRef.current.score));
 
     // Update Obstacles
@@ -127,11 +138,12 @@ export default function DinoGame() {
         width,
         height: 40,
       });
-      gameRef.current.nextObstacleDist = 300 + Math.random() * 400;
+      gameRef.current.nextObstacleDist = 350 + Math.random() * 450;
     }
 
     // Draw Ground
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, canvas.height - 20);
     ctx.lineTo(canvas.width, canvas.height - 20);
@@ -154,13 +166,13 @@ export default function DinoGame() {
       // Horizontal bar
       ctx.fillRect(cx - 10, cy - 10, 20, 4);
 
-      // Collision Detection
+      // Collision Detection (Circle-ish or Rectangle)
       if (
-        playerX < obs.x + obs.width &&
-        playerX + p.width > obs.x &&
-        playerY < canvas.height - 20 &&
-        playerY + p.height > canvas.height - 20 - obs.height
+        playerX < obs.x + obs.width - 5 &&
+        playerX + p.width - 5 > obs.x &&
+        playerY + p.height > canvas.height - 20 - obs.height + 5
       ) {
+        gameStateRef.current = 'GAME_OVER';
         setGameState('GAME_OVER');
         if (Math.floor(gameRef.current.score) > highScore) {
           setHighScore(Math.floor(gameRef.current.score));
@@ -188,9 +200,7 @@ export default function DinoGame() {
       ctx.fillRect(playerX + p.width - 13, playerY + p.height - 5, 8, 5);
     }
 
-    if (gameState === 'PLAYING') {
-      gameRef.current.frameId = requestAnimationFrame(gameLoop);
-    }
+    gameRef.current.frameId = requestAnimationFrame(gameLoop);
   };
 
   useEffect(() => {
