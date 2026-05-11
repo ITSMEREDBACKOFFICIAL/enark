@@ -70,41 +70,30 @@ function ShopAllContent() {
     }
   };
 
-  const handleAddToCart = () => {
-    if (!activeProduct) return;
-    const variant = activeProduct.variants?.find((v: any) => v.size === selectedSize) || activeProduct.variants?.[0];
-    if (!variant) return;
-
-    addItem({
-      id: activeProduct.id,
-      variantId: variant.id,
-      name: activeProduct.name,
-      price: activeProduct.base_price,
-      image: activeProduct.metadata?.image,
-      quantity: 1,
-      sku: variant.sku,
-      size: variant.size
-    });
-    playWarp();
-  };
-
-  // Path Normalizer for assets
+  // Robust Path Normalizer for assets
   const getProductImage = (product: any) => {
     const img = product?.metadata?.image;
-    if (!img) return '/placeholder.jpg';
-    if (img.includes('exo_front')) return '/images/exo-jacket/front.png';
+    if (!img || typeof img !== 'string') return 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=1000&auto=format&fit=crop';
+    
+    // Catch-all for legacy local paths
+    if (img.includes('exo_front') || img.includes('exo_jacket')) return '/images/exo-jacket/front.png';
     if (img.includes('exo_back')) return '/images/exo-jacket/back.png';
     if (img.includes('exo_detail')) return '/images/exo-jacket/detail.png';
-    if (img.startsWith('/Users/')) return '/placeholder.jpg';
+    if (img.includes('/Users/chinnu/') || img.includes('/brain/')) {
+       // Check if we can map other common ones or fallback
+       if (img.includes('blazer')) return '/images/velvet_blazer_luxury_1776743227817.png';
+       if (img.includes('parka')) return '/images/utility_parka_luxury_1776743275844.png';
+       return 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=1000&auto=format&fit=crop';
+    }
     return img;
   };
 
   return (
-    <main className="h-screen w-full bg-[#0A0A0A] text-white selection:bg-enark-red selection:text-white mono overflow-hidden flex flex-col">
+    <main className="min-h-screen w-full bg-[#0A0A0A] text-white selection:bg-enark-red selection:text-white mono flex flex-col relative">
       <Header />
       
       {/* --- CINEMATIC PRODUCT SLIDESHOW --- */}
-      <div className="flex-1 relative flex flex-col md:flex-row pt-20 md:pt-0 overflow-hidden">
+      <div className="relative flex-1 flex flex-col md:flex-row pt-24 md:pt-0 overflow-hidden min-h-[85vh]">
         
         {/* Backdrop Large Text */}
         <AnimatePresence mode="wait">
@@ -122,17 +111,17 @@ function ShopAllContent() {
         </AnimatePresence>
 
         {/* LEFT INFORMATION PANEL (Split Screen) */}
-        <div className="w-full md:w-[45%] h-auto md:h-full p-8 md:p-16 lg:p-24 flex flex-col justify-center space-y-8 md:space-y-12 z-20 relative bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none">
+        <div className="w-full md:w-[45%] h-full p-8 md:p-16 lg:p-24 flex flex-col justify-center space-y-8 md:space-y-12 z-20 relative bg-gradient-to-r from-black via-black/40 to-transparent">
            
            <AnimatePresence mode="wait">
-             {activeProduct && (
+             {activeProduct ? (
                <motion.div
                  key={activeProduct.id}
-                 initial={{ opacity: 0, x: -50 }}
+                 initial={{ opacity: 0, x: -30 }}
                  animate={{ opacity: 1, x: 0 }}
-                 exit={{ opacity: 0, x: 50 }}
-                 transition={{ duration: 0.5 }}
-                 className="space-y-8 pointer-events-auto"
+                 exit={{ opacity: 0, x: 30 }}
+                 transition={{ duration: 0.4 }}
+                 className="space-y-8"
                >
                  <div className="space-y-2">
                     <span className="text-enark-red text-[10px] font-black uppercase tracking-[0.5em]">ASSET_ID // 0{currentIndex + 1}</span>
@@ -182,6 +171,10 @@ function ShopAllContent() {
                     </button>
                  </div>
                </motion.div>
+             ) : (
+               <div className="h-64 flex items-center justify-center">
+                 <p className="mono text-[10px] uppercase tracking-[0.5em] animate-pulse">SYNCHRONIZING_NODE...</p>
+               </div>
              )}
            </AnimatePresence>
 
@@ -200,18 +193,17 @@ function ShopAllContent() {
         </div>
 
         {/* RIGHT CAROUSEL (Immersive Images) */}
-        <div className="flex-1 relative flex items-center justify-center z-10">
+        <div className="flex-1 relative flex items-center justify-center z-10 p-8 md:p-20">
            
            {/* Center Image Container */}
-           <div className="relative w-full h-full md:h-[85%] aspect-[3/4] md:aspect-auto flex items-center justify-center p-4 md:p-12">
-              <AnimatePresence initial={false} custom={direction} mode="popLayout">
+           <div className="relative w-full h-full flex items-center justify-center">
+              <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
-                  custom={direction}
-                  initial={{ opacity: 0, x: direction > 0 ? 300 : -300, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: direction > 0 ? -300 : 300, scale: 0.9 }}
-                  transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.1 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
                   className="w-full h-full flex items-center justify-center"
                 >
                    <img 
@@ -223,9 +215,9 @@ function ShopAllContent() {
               </AnimatePresence>
            </div>
 
-           {/* Side Peeks (Decorative) */}
-           <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black via-black/50 to-transparent pointer-events-none hidden md:block z-30" />
-           <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black via-black/50 to-transparent pointer-events-none hidden md:block z-30" />
+           {/* Side Peeks (Decorative Overlays for Depth) */}
+           <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black to-transparent pointer-events-none hidden md:block z-30" />
+           <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black to-transparent pointer-events-none hidden md:block z-30" />
 
            {/* Navigation Controls */}
            <div className="absolute bottom-12 right-12 md:right-20 flex gap-4 z-[100]">
@@ -246,7 +238,7 @@ function ShopAllContent() {
            </div>
 
            {/* Search & Diagnostic Toggle */}
-           <div className="absolute top-24 md:top-32 right-12 md:right-20 flex items-center gap-6 z-[100]">
+           <div className="absolute top-32 right-12 md:right-20 flex items-center gap-6 z-[100]">
               <button 
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="group flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors bg-black/40 backdrop-blur-md px-6 py-3 border border-white/5"
