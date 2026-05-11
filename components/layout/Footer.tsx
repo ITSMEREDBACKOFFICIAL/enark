@@ -5,6 +5,7 @@ import { Instagram, ArrowUpRight, Globe, Lock, Twitter, Youtube, Linkedin } from
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import BackgroundBoxes from '@/components/ui/BackgroundBoxes';
 
 export default function Footer() {
   const [brandName, setBrandName] = useState('ENARK');
@@ -305,6 +306,9 @@ export default function Footer() {
         ref={sceneRef}
         className="mt-20 border border-theme h-[50vh] md:h-[60vh] flex justify-center items-center overflow-hidden cursor-pointer select-none bg-background relative mx-6 md:mx-12 mb-12 rounded-[48px] shadow-[inset_0_0_50px_rgba(0,0,0,0.05)]"
       >
+        {/* Dynamic Background Boxes (Framer Inspired) */}
+        <BackgroundBoxes />
+
         {['E', 'N', 'A', 'R', 'K'].map((char, index) => (
           <div
             key={index}
