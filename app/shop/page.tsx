@@ -14,19 +14,20 @@ import { useSearchParams, useRouter } from 'next/navigation';
 function ShopAllContent() {
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
-  const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [isLongPress, setIsLongPress] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const { playClick, playHum } = useAudio();
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  
+  const { playClick, playHum, playWarp } = useAudio();
+  const addItem = useCart((state) => state.addItem);
   const addRecentlyViewed = useRecentlyViewed((state) => state.addItem);
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const activeProduct = filteredProducts[currentIndex];
 
   useEffect(() => {
     async function fetchProducts() {
@@ -38,38 +39,15 @@ function ShopAllContent() {
       if (data) {
         setProducts(data);
         setFilteredProducts(data);
-        
-        const productId = searchParams.get('product_id');
-        if (productId) {
-          const product = data.find(p => p.id === productId);
-          if (product) {
-            router.push(`/product/${product.slug}`);
-          }
-        }
       }
     }
     fetchProducts();
-  }, [searchParams, router]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   useEffect(() => {
     let filtered = products;
     if (categoryFilter !== 'ALL') {
       filtered = filtered.filter(p => p.category?.toUpperCase() === categoryFilter);
-    }
-    if (statusFilter !== 'ALL') {
-      filtered = filtered.filter(p => {
-        if (statusFilter === 'RARE') return p.base_price > 20000;
-        if (statusFilter === 'ACTIVE') return p.is_active;
-        return true;
-      });
     }
     filtered = filtered.filter(p => p.base_price >= priceRange[0] && p.base_price <= priceRange[1]);
     if (searchQuery) {
@@ -79,298 +57,250 @@ function ShopAllContent() {
       );
     }
     setFilteredProducts(filtered);
-  }, [categoryFilter, statusFilter, priceRange, searchQuery, products]);
+    setCurrentIndex(0); // Reset to first product on filter change
+  }, [categoryFilter, priceRange, searchQuery, products]);
 
-  const categories = ['ALL', 'FORMAL', 'TRADITIONAL', 'STREETWEAR'];
+  const handleAddToCart = () => {
+    if (!activeProduct) return;
+    
+    // Find the variant for the selected size or use the first variant
+    const variant = activeProduct.variants?.find((v: any) => v.size === selectedSize) || activeProduct.variants?.[0];
+    
+    if (!variant) return;
+
+    addItem({
+      id: activeProduct.id,
+      variantId: variant.id,
+      name: activeProduct.name,
+      price: activeProduct.base_price,
+      image: activeProduct.metadata?.image,
+      quantity: 1,
+      sku: variant.sku,
+      size: variant.size
+    });
+    playWarp();
+  };
+
+  const nextProduct = () => {
+    if (currentIndex < filteredProducts.length - 1) {
+      playClick();
+      setCurrentIndex(currentIndex + 1);
+      setSelectedSize(null);
+    }
+  };
+
+  const prevProduct = () => {
+    if (currentIndex > 0) {
+      playClick();
+      setCurrentIndex(currentIndex - 1);
+      setSelectedSize(null);
+    }
+  };
+
+  if (filteredProducts.length === 0 && products.length > 0) {
+     return (
+        <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-8">
+           <Search size={48} className="opacity-20" />
+           <p className="mono text-[10px] uppercase tracking-[0.5em] opacity-40">NO_MATCHING_ASSETS_FOUND</p>
+           <button onClick={() => { setSearchQuery(''); setCategoryFilter('ALL'); }} className="text-enark-red mono text-[10px] underline uppercase tracking-widest">Reset_Diagnostics</button>
+        </main>
+     );
+  }
 
   return (
-    <main className="min-h-screen bg-background text-foreground mono selection:bg-enark-red selection:text-white">
+    <main className="h-screen w-full bg-black text-white selection:bg-enark-red selection:text-white mono overflow-hidden flex flex-col md:flex-row">
       <Header />
-
       
-      {/* Stark Aesthetic Header */}
-      <div className="pt-[120px] md:pt-[140px] px-5 md:px-12 border-b border-theme">
-        <div className="max-w-screen-2xl mx-auto py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
-          <div className="space-y-1">
-            <span className="text-enark-red text-[10px] font-black uppercase tracking-[0.4em]">CATALOG_NODE // READY</span>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter-x uppercase">SHOP ALL</h1>
-          </div>
-
-          <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-            {/* Search Input — Always visible on mobile, integrated on desktop */}
-            <div className="relative w-full md:w-64 lg:w-80 group">
-              <Search 
-                size={14} 
-                className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${searchQuery ? 'text-enark-red' : 'text-foreground/30 group-focus-within:text-foreground'}`} 
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="SEARCH_CATALOG..."
-                className="w-full bg-surface border-2 border-theme px-10 py-3 md:py-4 text-[10px] font-black uppercase tracking-[0.2em] outline-none focus:border-foreground transition-all placeholder:text-foreground/20"
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-foreground/40 hover:text-enark-red transition-colors"
-                >
-                  CLEAR
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="hidden md:flex gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => { playClick(); setCategoryFilter(cat); }}
-                    className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 border transition-all ${
-                      categoryFilter === cat ? 'bg-foreground text-background border-foreground' : 'border-theme text-foreground/60 hover:text-foreground hover:border-foreground/40'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-              
-              <button
-                onClick={() => { playClick(); setIsFilterOpen(!isFilterOpen); }}
-                className={`flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 border-2 font-black text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all ${
-                  isFilterOpen ? 'bg-enark-red border-enark-red text-white' : 'border-foreground text-foreground hover:bg-foreground hover:text-background'
-                }`}
-              >
-                <Filter size={13} className={isFilterOpen ? 'animate-pulse' : ''} />
-                <span className="hidden sm:inline">{isFilterOpen ? 'CLOSE_DIAGNOSTIC' : 'OPEN_DIAGNOSTIC'}</span>
-                <span className="sm:hidden">{isFilterOpen ? 'CLOSE' : 'FILTER'}</span>
-              </button>
-            </div>
-          </div>
+      {/* --- LEFT PANEL: PRODUCT INFORMATION --- */}
+      <div className="w-full md:w-[45%] h-[50%] md:h-full border-r border-white/5 p-6 md:p-12 flex flex-col justify-end md:justify-center space-y-6 md:space-y-12 relative z-10 bg-black">
+        
+        {/* Navigation Breadcrumbs */}
+        <div className="absolute top-24 md:top-32 left-6 md:left-12 flex items-center gap-4">
+           <span className="text-enark-red text-[10px] font-black uppercase tracking-[0.5em]">SHOP_ALL // ASSET_{String(currentIndex + 1).padStart(3, '0')}</span>
+           <div className="h-[1px] w-12 bg-white/10" />
         </div>
 
-        {/* Mobile category pills */}
-        <div className="flex md:hidden gap-2 overflow-x-auto scrollbar-hide pb-4">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => { playClick(); setCategoryFilter(cat); }}
-              className={`flex-shrink-0 text-[10px] font-black uppercase tracking-widest px-4 py-2 border transition-all ${
-                categoryFilter === cat ? 'bg-foreground text-background border-foreground' : 'border-theme text-foreground/60'
-              }`}
+        <AnimatePresence mode="wait">
+          {activeProduct && (
+            <motion.div
+              key={activeProduct.id}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 30 }}
+              transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
+              className="space-y-8 md:space-y-12"
             >
-              {cat}
-            </button>
-          ))}
+              <div className="space-y-2">
+                <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter-x italic leading-tight">
+                  {activeProduct.name}
+                </h1>
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl md:text-4xl font-bold text-white mono italic opacity-40">₹{activeProduct.base_price.toLocaleString()}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 border border-white/10">{activeProduct.category || 'ASSET'}</span>
+                </div>
+              </div>
+
+              <div className="max-w-md space-y-6">
+                <p className="text-[10px] md:text-xs text-white/40 uppercase tracking-[0.2em] leading-relaxed">
+                  {activeProduct.description || "High-performance technical garment engineered for the Obsidian Node mesh. Features reinforced seams and industrial-grade textile construction."}
+                </p>
+                
+                {/* Size Matrix */}
+                <div className="space-y-4">
+                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-enark-red">SIZE_CALIBRATION</span>
+                  <div className="flex flex-wrap gap-2">
+                    {activeProduct.variants?.map((v: any) => (
+                      <button
+                        key={v.id}
+                        onClick={() => { playClick(); setSelectedSize(v.size); }}
+                        className={`px-6 py-3 border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                          selectedSize === v.size ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/40 hover:text-white'
+                        }`}
+                      >
+                        {v.size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                 <button 
+                   onClick={handleAddToCart}
+                   className="flex-1 px-12 py-5 bg-enark-red text-white text-[11px] font-black uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all shadow-[0_20px_60px_rgba(220,38,38,0.3)]"
+                 >
+                   ADD_TO_CART_0.1
+                 </button>
+                 <button 
+                   onClick={() => router.push(`/product/${activeProduct.slug}`)}
+                   className="px-12 py-5 border border-white/10 text-white/40 text-[10px] font-black uppercase tracking-[0.4em] hover:text-white hover:border-white transition-all"
+                 >
+                   FULL_DATA_LINK
+                 </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Custom Progress Bar */}
+        <div className="absolute bottom-12 left-6 md:left-12 right-6 md:right-12 h-[2px] bg-white/5 overflow-hidden">
+           <motion.div 
+             className="h-full bg-enark-red"
+             initial={{ width: 0 }}
+             animate={{ width: `${((currentIndex + 1) / filteredProducts.length) * 100}%` }}
+           />
+        </div>
+      </div>
+
+      {/* --- RIGHT PANEL: IMMERSIVE IMAGE SLIDESHOW --- */}
+      <div className="flex-1 h-[50%] md:h-full relative overflow-hidden group">
+        <AnimatePresence mode="wait">
+          {activeProduct && (
+            <motion.div
+              key={activeProduct.id}
+              initial={{ opacity: 0, scale: 1.1, x: 100 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.9, x: -100 }}
+              transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+              className="absolute inset-0"
+            >
+              <img 
+                src={activeProduct.metadata?.image || '/placeholder.jpg'} 
+                alt={activeProduct.name}
+                className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-transparent to-black/80" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Global Catalog Watermark */}
+        <div className="absolute bottom-12 right-12 text-[10vw] font-black text-white/[0.03] uppercase italic pointer-events-none select-none">
+          CATALOG_2026
         </div>
 
-        {/* Unique Diagnostic Filter Drawer */}
+        {/* Navigation Arrows */}
+        <div className="absolute bottom-12 left-12 flex gap-4 z-20">
+           <button 
+             onClick={prevProduct}
+             disabled={currentIndex === 0}
+             className="w-16 h-16 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all disabled:opacity-10"
+           >
+             <ListIcon size={18} className="rotate-180" />
+           </button>
+           <button 
+             onClick={nextProduct}
+             disabled={currentIndex === filteredProducts.length - 1}
+             className="w-16 h-16 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all disabled:opacity-10"
+           >
+             <ListIcon size={18} />
+           </button>
+        </div>
+
+        {/* Controls Overlay */}
+        <div className="absolute top-24 md:top-32 right-6 md:right-12 flex gap-4 z-20">
+           <button 
+             onClick={() => setIsFilterOpen(!isFilterOpen)}
+             className={`px-8 py-3 border font-black text-[9px] uppercase tracking-widest transition-all ${
+               isFilterOpen ? 'bg-enark-red border-enark-red' : 'border-white/10 bg-black/50 backdrop-blur-md hover:border-white'
+             }`}
+           >
+             {isFilterOpen ? 'CLOSE_DIAGNOSTICS' : 'OPEN_DIAGNOSTICS'}
+           </button>
+        </div>
+
+        {/* Filter Drawer Overlay */}
         <AnimatePresence>
           {isFilterOpen && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-theme bg-surface"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute top-0 right-0 w-full md:w-80 h-full bg-black/90 backdrop-blur-2xl border-l border-white/5 z-50 p-12 space-y-12"
             >
-              <div className="max-w-screen-2xl mx-auto py-12 grid grid-cols-1 md:grid-cols-3 gap-12">
-                {/* Price Matrix */}
-                <div className="space-y-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-enark-red">PRICE_SPECTRUM</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { label: '0 — 10K', range: [0, 10000] },
-                      { label: '10K — 25K', range: [10000, 25000] },
-                      { label: '25K — 50K', range: [25000, 50000] },
-                      { label: 'ALL_LEVELS', range: [0, 100000] },
-                    ].map((p) => (
-                      <button
-                        key={p.label}
-                        onClick={() => { playClick(); setPriceRange(p.range as [number, number]); }}
-                        className={`p-4 border text-[10px] font-bold uppercase tracking-widest text-left transition-all ${
-                          priceRange[0] === p.range[0] && priceRange[1] === p.range[1] 
-                            ? 'bg-foreground text-background border-foreground' 
-                            : 'border-theme text-foreground/60 hover:border-foreground/40 hover:text-foreground'
-                        }`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Status Nodes */}
-                <div className="space-y-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-enark-red">ASSET_STATUS</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {[
-                      { label: 'ACTIVE_DUTY', id: 'ACTIVE' },
-                      { label: 'RARE_COLLECTIBLE', id: 'RARE' },
-                      { label: 'SHOW_ALL', id: 'ALL' },
-                    ].map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => { playClick(); setStatusFilter(s.id); }}
-                        className={`p-4 border text-[10px] font-bold uppercase tracking-widest text-left flex justify-between items-center transition-all ${
-                          statusFilter === s.id 
-                          ? 'bg-foreground text-background border-foreground' 
-                          : 'border-theme text-foreground/60 hover:border-foreground/40 hover:text-foreground'
-                        }`}
-                      >
-                        {s.label}
-                        <div className={`w-1.5 h-1.5 rounded-full ${statusFilter === s.id ? 'bg-enark-red animate-ping' : 'bg-foreground/20'}`} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Categories (Mobile/Refined) */}
-                <div className="space-y-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-enark-red">CATEGORY_MAP</p>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => { playClick(); setCategoryFilter(cat); }}
-                        className={`px-4 py-2 border text-[10px] font-bold uppercase tracking-widest transition-all ${
-                          categoryFilter === cat 
-                            ? 'bg-foreground text-background border-foreground' 
-                            : 'border-theme text-foreground/60 hover:border-foreground/40 hover:text-foreground'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="pt-6 border-t border-foreground/5">
+              <div className="space-y-6">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-enark-red">CATEGORY_MAP</p>
+                <div className="flex flex-col gap-2">
+                   {['ALL', 'FORMAL', 'TRADITIONAL', 'STREETWEAR'].map(cat => (
                      <button 
-                       onClick={() => { 
-                         setCategoryFilter('ALL'); 
-                         setStatusFilter('ALL'); 
-                         setPriceRange([0, 100000]); 
-                         playClick();
-                       }}
-                       className="text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:text-enark-red flex items-center gap-2"
-                     >
-                       RESET_DIAGNOSTICS_0.1
+                        key={cat} 
+                        onClick={() => setCategoryFilter(cat)}
+                        className={`text-left px-4 py-3 border text-[10px] font-black uppercase tracking-widest transition-all ${
+                          categoryFilter === cat ? 'border-enark-red text-enark-red' : 'border-white/5 text-white/30 hover:text-white'
+                        }`}
+                      >
+                       {cat}
                      </button>
-                  </div>
+                   ))}
                 </div>
               </div>
+
+              <div className="space-y-6">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-enark-red">SEARCH_UPLINK</p>
+                <input 
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="INPUT_ID..."
+                  className="w-full bg-white/5 border border-white/10 px-4 py-4 text-[10px] font-black uppercase tracking-widest focus:border-enark-red outline-none"
+                />
+              </div>
+
+              <button 
+                onClick={() => setIsFilterOpen(false)}
+                className="w-full py-4 border border-white/10 text-white/40 text-[9px] font-black uppercase tracking-widest hover:text-white transition-all"
+              >
+                CLOSE_MANIFEST [X]
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Terminal Archive Layout */}
-      <section className="py-12 min-h-[60vh] relative">
-        <div className="max-w-screen-2xl mx-auto flex flex-col border-t border-foreground/5">
-          <AnimatePresence mode="popLayout">
-            {filteredProducts.map((product, i) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.4, delay: i * 0.04 }}
-                className="group border-b border-theme py-6 md:py-12 px-6 md:px-12 flex flex-col md:flex-row justify-between items-start md:items-center cursor-pointer transition-colors duration-300 hover:bg-surface"
-                onMouseEnter={() => setHoveredImage(product.metadata?.image || null)}
-                onMouseLeave={() => setHoveredImage(null)}
-                onTouchStart={(e) => {
-                  setMousePosition({ x: e.touches[0].clientX, y: e.touches[0].clientY });
-                  setIsLongPress(false);
-                  touchTimerRef.current = setTimeout(() => {
-                    setIsLongPress(true);
-                    setHoveredImage(product.metadata?.image || null);
-                  }, 400); // 400ms to trigger long press
-                }}
-                onTouchMove={(e) => {
-                  if (isLongPress) {
-                    // prevent scroll if long pressing and update image pos
-                    setMousePosition({ x: e.touches[0].clientX, y: e.touches[0].clientY });
-                  } else {
-                    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-                  }
-                }}
-                onTouchEnd={() => {
-                  if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-                  setTimeout(() => {
-                    setHoveredImage(null);
-                    setIsLongPress(false);
-                  }, 100);
-                }}
-                onClick={(e) => {
-                  if (isLongPress) {
-                    e.preventDefault();
-                    return; // Prevent opening details if they were just long-pressing to view
-                  }
-                  playHum();
-                  router.push(`/product/${product.slug}`);
-                  addRecentlyViewed({
-                    id: product.id,
-                    name: product.name,
-                    price: product.base_price,
-                    image: product.metadata?.image,
-                    category: product.category,
-                    slug: product.slug
-                  });
-                }}
-              >
-                <div className="flex items-center gap-3 md:gap-8 overflow-hidden flex-1 min-w-0">
-                  <span className="shrink-0 text-foreground/40 font-mono text-xs">[{String(i + 1).padStart(3, '0')}]</span>
-                  <h2 className="text-xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter-x group-hover:text-enark-red transition-colors duration-300 truncate leading-tight py-1">
-                    {product.name}
-                  </h2>
-                </div>
-                
-                <div className="flex flex-row items-center justify-between md:flex-col md:items-end gap-3 mt-3 md:mt-0 w-full md:w-auto shrink-0">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/70 border border-theme px-3 py-1">
-                    {product.category || 'ASSET'}
-                  </span>
-                  <span className="text-base md:text-2xl font-black text-foreground mono">
-                    ₹{product.base_price.toLocaleString()}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {filteredProducts.length === 0 && (
-            <div className="h-96 flex flex-col items-center justify-center space-y-4 opacity-20 mono border-b border-foreground/5">
-              <Search size={48} />
-              <p className="text-xs font-black uppercase tracking-[0.5em]">DATABASE_EMPTY</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Floating Hover Image — desktop only */}
-      <AnimatePresence>
-        {hoveredImage && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="pointer-events-none fixed z-[60] overflow-hidden border border-foreground/20 shadow-[0_20px_50px_rgba(0,0,0,0.2)]"
-            style={{
-              left: mousePosition.x,
-              top: mousePosition.y,
-              width: '350px',
-              height: '450px',
-              x: '-50%',
-              y: '-50%'
-            }}
-          >
-            <img 
-              src={hoveredImage} 
-              alt="Preview" 
-              className="w-full h-full object-cover transition-all duration-300"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+    </main>
+  );
+}
 
       <RecentlyViewed />
       <Footer />
