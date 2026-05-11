@@ -95,16 +95,16 @@ export default function Home() {
   };
 
   return (
-    <main ref={containerRef} className="relative h-screen bg-black text-white selection:bg-enark-red selection:text-white mono overflow-hidden">
+    <main ref={containerRef} className="relative min-h-[200vh] bg-black text-white selection:bg-enark-red selection:text-white mono">
       <Header />
       
-      {/* 3D HERO STAGE */}
-      <section className="absolute inset-0 z-0">
+      {/* 3D HERO STAGE - FIXED BACKGROUND */}
+      <section className="fixed inset-0 z-0 pointer-events-none">
         <Hero3D />
       </section>
 
-      {/* OVERLAY UI */}
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center pointer-events-none">
+      {/* OVERLAY UI - HERO SECTION (100vh) */}
+      <div className="relative z-10 w-full h-screen flex flex-col items-center justify-center pointer-events-none">
         
         {/* Kinetic Parallax Typography */}
         <motion.div 
@@ -118,7 +118,7 @@ export default function Home() {
         </motion.div>
 
         {/* Magnetic CTA */}
-        <div className="mt-[40vh]">
+        <div className="mt-[40vh] pointer-events-auto">
           <MagneticButton onClick={handleWarp}>
             VIEW_COLLECTION
           </MagneticButton>
@@ -134,6 +134,16 @@ export default function Home() {
           <span className="text-[7px] font-black uppercase tracking-[0.6em]">Scroll_To_Analyze_Assets</span>
           <ChevronDown size={14} className="text-white animate-bounce" />
         </motion.div>
+      </div>
+
+      {/* ADDITIONAL SCROLL CONTENT SECTION */}
+      <div className="relative z-10 w-full h-screen flex items-center justify-center bg-transparent pointer-events-none">
+         <div className="max-w-4xl p-12 text-center space-y-12">
+            <h2 className="text-4xl md:text-8xl font-black italic uppercase tracking-tighter-x">Biological_Synthesis</h2>
+            <p className="text-xs md:text-sm text-white/30 uppercase tracking-[0.4em] leading-relaxed">
+              Engineering the next generation of high-performance technical garments. Optimized for the Obsidian Node mesh.
+            </p>
+         </div>
       </div>
 
       <Footer />

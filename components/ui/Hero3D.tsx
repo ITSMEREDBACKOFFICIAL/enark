@@ -53,12 +53,21 @@ function Particles({ count = 2000 }) {
 
 function AntigravityMesh() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const { scrollYProgress } = useNativeScroll();
   
+  // Map scroll progress to 3D transforms
+  const rotateY = useTransform(scrollYProgress, [0, 1], [0, Math.PI * 2]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1, 2, 8]);
+  const positionZ = useTransform(scrollYProgress, [0, 1], [0, 5]);
+
   useFrame((state) => {
     if (meshRef.current) {
       const t = state.clock.getElapsedTime();
-      meshRef.current.rotation.y = t * 0.2;
+      // Combine "breathing" with scroll-linked rotation
+      meshRef.current.rotation.y = rotateY.get() + t * 0.2;
       meshRef.current.rotation.z = t * 0.1;
+      meshRef.current.scale.setScalar(scale.get());
+      meshRef.current.position.z = positionZ.get();
     }
   });
 
