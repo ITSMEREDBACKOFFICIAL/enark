@@ -16,8 +16,7 @@ import { useAudio } from '@/hooks/useAudio';
 
 import BackgroundBoxes from '@/components/ui/BackgroundBoxes';
 import ParallaxGallery from '@/components/ui/ParallaxGallery';
-
-// ... existing code ...
+import Hero3D from '@/components/ui/Hero3D';
 
 export default function Home() {
   const { playWarp, playClick, playHum } = useAudio();
