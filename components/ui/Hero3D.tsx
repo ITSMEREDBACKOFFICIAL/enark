@@ -3,19 +3,18 @@
 import React, { useRef, useState, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { 
-  useGLTF, 
   Float, 
   Environment, 
   ContactShadows, 
   PerspectiveCamera,
-  Text,
-  useScroll,
   Points,
   PointMaterial,
-  SpotLight
+  SpotLight,
+  MeshDistortMaterial,
+  Sphere
 } from '@react-three/drei';
 import * as THREE from 'three';
-import { motion, useScroll as useNativeScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 function Particles({ count = 2000 }) {
   const points = useMemo(() => {
@@ -52,38 +51,30 @@ function Particles({ count = 2000 }) {
   );
 }
 
-function HoodieModel() {
-  // Using a high-quality hoodie model from a public CDN
-  const { scene } = useGLTF('https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/hoodie/model.gltf');
-  const meshRef = useRef<THREE.Group>(null);
+function AntigravityMesh() {
+  const meshRef = useRef<THREE.Mesh>(null);
   
-  // Handle Inertial Dragging & Mouse Interaction
-  const [rotation, setRotation] = useState([0, 0, 0]);
-  const [isDragging, setIsDragging] = useState(false);
-
   useFrame((state) => {
-    if (!isDragging && meshRef.current) {
-      // "Breathing" and drifting effect
+    if (meshRef.current) {
       const t = state.clock.getElapsedTime();
-      meshRef.current.rotation.y += Math.sin(t * 0.5) * 0.001;
-      meshRef.current.position.y = Math.sin(t * 1.2) * 0.1;
+      meshRef.current.rotation.y = t * 0.2;
+      meshRef.current.rotation.z = t * 0.1;
     }
   });
 
   return (
-    <Float
-      speed={1.5} 
-      rotationIntensity={0.5} 
-      floatIntensity={0.5}
-    >
-      <primitive 
-        ref={meshRef}
-        object={scene} 
-        scale={2.5} 
-        position={[0, -1, 0]} 
-        rotation={[0, Math.PI / 8, 0]}
-        castShadow
-      />
+    <Float speed={2} rotationIntensity={1} floatIntensity={2}>
+      <Sphere args={[1.2, 64, 64]} ref={meshRef}>
+        <MeshDistortMaterial
+          color="#111111"
+          roughness={0.1}
+          metalness={1}
+          distort={0.4}
+          speed={2}
+          clearcoat={1}
+          clearcoatRoughness={0.1}
+        />
+      </Sphere>
     </Float>
   );
 }
@@ -128,7 +119,7 @@ export default function Hero3D() {
         <CursorLight />
         
         <Suspense fallback={null}>
-          <HoodieModel />
+          <AntigravityMesh />
           <Particles />
           <Environment preset="city" />
           <ContactShadows 
