@@ -14,7 +14,7 @@ import MinimalGuide from '@/components/ui/MinimalGuide';
 import SpectraNoise from '@/components/ui/SpectraNoise';
 import { useAudio } from '@/hooks/useAudio';
 
-import SpherePortfolio from '@/components/ui/SpherePortfolio';
+import CardStack3D from '@/components/ui/CardStack3D';
 
 export default function Home() {
   const { playWarp, playClick, playHum } = useAudio();
@@ -32,28 +32,8 @@ export default function Home() {
     }, 2000);
   };
 
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-
-    const ctx = gsap.context(() => {
-      // Reveal animations for the sphere
-      gsap.fromTo(
-        '.sphere-reveal',
-        { opacity: 0, scale: 0.8 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 2.5,
-          ease: 'power3.out',
-        }
-      );
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <main ref={containerRef} className="relative min-h-screen bg-black text-white selection:bg-enark-red selection:text-white mono overflow-x-hidden">
+    <main ref={containerRef} className="relative min-h-screen bg-black text-white selection:bg-enark-red selection:text-white mono">
       
       {/* Background Layer */}
       <SpectraNoise />
@@ -63,16 +43,16 @@ export default function Home() {
       
       <Header />
       
-      {/* --- HERO SECTION --- */}
-      <section className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden">
+      {/* --- HERO SECTION WITH 3D CARD STACK --- */}
+      <section className="relative w-full overflow-visible">
         
-        {/* 3D SPHERE (Behind Button) */}
-        <div className="absolute inset-0 flex items-center justify-center sphere-reveal opacity-0 z-0">
-          <SpherePortfolio />
+        {/* The 3D Scrollable Stack (Behind Button) */}
+        <div className="relative z-0">
+          <CardStack3D />
         </div>
 
-        {/* INTERACTIVE BUTTON (Foreground) */}
-        <div className="relative z-[100] flex flex-col items-center gap-12 pointer-events-none">
+        {/* STICKY INTERACTIVE BUTTON (Foreground) */}
+        <div className="fixed inset-0 pointer-events-none z-[100] flex flex-col items-center justify-center gap-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -82,34 +62,28 @@ export default function Home() {
             <button 
               onClick={handleWarp}
               onMouseEnter={() => playHum()}
-              className="group relative px-16 py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.5em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_80px_rgba(0,0,0,1)]"
+              className="group relative px-16 py-6 bg-white text-black text-[11px] font-black uppercase tracking-[0.5em] overflow-hidden hover:text-white transition-all duration-500 shadow-[0_40px_100px_rgba(0,0,0,1)]"
             >
               <span className="relative z-10">INITIATE_UPLINK</span>
               <div className="absolute inset-0 bg-enark-red translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
             </button>
           </motion.div>
 
-          {/* Simple Navigation Instruction */}
+          {/* Scrolling Instructions */}
           <motion.div 
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.2 }}
+            animate={{ opacity: 0.3 }}
             transition={{ delay: 1.5 }}
-            className="flex items-center gap-4"
+            className="flex flex-col items-center gap-4"
           >
-            <div className="w-8 h-[1px] bg-white/20" />
-            <span className="text-[7px] font-black uppercase tracking-[0.6em]">Drag_To_Rotate_Sphere</span>
-            <div className="w-8 h-[1px] bg-white/20" />
-          </motion.div>
-        </div>
-
-        {/* Minimal Scroll Hint */}
-        <div className="absolute bottom-12 flex flex-col items-center gap-4 opacity-10">
+            <span className="text-[7px] font-black uppercase tracking-[0.6em]">Scroll_To_Cycle_Assets</span>
             <ChevronDown size={14} className="text-white animate-bounce" />
+          </motion.div>
         </div>
       </section>
 
       {/* Footer Branding Offset */}
-      <div className="h-32" />
+      <div className="h-64 bg-black relative z-10" />
 
       {/* --- FOOTER --- */}
       <Footer />
