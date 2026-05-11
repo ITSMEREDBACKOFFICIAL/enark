@@ -74,12 +74,6 @@ export default function Home() {
   const router = useRouter();
   const [isWarping, setIsWarping] = useState(false);
 
-  // Global Scroll for the whole page
-  const { scrollYProgress } = useNativeScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
   // Parallax Text Offset
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   useEffect(() => {
@@ -103,21 +97,23 @@ export default function Home() {
   };
 
   return (
-    <main ref={containerRef} className="relative min-h-[400vh] bg-black text-white selection:bg-enark-red selection:text-white mono">
+    <main ref={containerRef} className="relative h-screen bg-black text-white selection:bg-enark-red selection:text-white mono overflow-hidden">
+      
+      {/* Background Layer */}
+      <SpectraNoise />
+      
+      {/* Global Grain & Scanline Overlays */}
+      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+      
       <Header />
       
-      {/* 3D HERO STAGE - FIXED BACKGROUND */}
-      <section className="fixed inset-0 z-0 pointer-events-none">
+      {/* 3D HERO STAGE */}
+      <section className="absolute inset-0 z-0">
         <Hero3D />
       </section>
 
-      {/* DYNAMIC BACKGROUND GRID (Scroll-Linked) */}
-      <section className="fixed inset-0 z-1 pointer-events-none">
-        <BackgroundBoxes scrollProgress={scrollYProgress} />
-      </section>
-
-      {/* OVERLAY UI - HERO SECTION (100vh) */}
-      <div className="relative z-10 w-full h-screen flex flex-col items-center justify-center pointer-events-none">
+      {/* OVERLAY UI */}
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center pointer-events-none">
         
         {/* Kinetic Parallax Typography */}
         <motion.div 
@@ -148,9 +144,6 @@ export default function Home() {
           <ChevronDown size={14} className="text-white animate-bounce" />
         </motion.div>
       </div>
-
-      {/* PARALLAX GALLERY SECTION */}
-      <ParallaxGallery scrollProgress={scrollYProgress} />
 
       <Footer />
 
