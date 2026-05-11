@@ -6,7 +6,6 @@ import { Plus, Minus, HelpCircle, Zap, ShieldCheck, Truck, RotateCcw, Languages 
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import RecentlyViewed from '@/components/product/RecentlyViewed';
 
 const faqs = [
   {
@@ -138,7 +137,6 @@ export default function FAQPage() {
           </div>
         </div>
       </div>
-      <RecentlyViewed />
       <Footer />
     </main>
   );

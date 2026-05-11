@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Ruler, Droplets, Activity, Shield } from 'lucide-react';
 import SizeFinder from '@/components/fit/SizeFinder';
@@ -193,7 +192,6 @@ export default function FitPage() {
         </div>
       </div>
 
-      <RecentlyViewed />
       <Footer />
     </main>
   );

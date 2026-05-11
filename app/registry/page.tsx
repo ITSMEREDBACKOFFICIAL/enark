@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import Link from 'next/link';
@@ -106,7 +105,6 @@ export default function RegistryPage() {
         </div>
       </section>
 
-      <RecentlyViewed />
       <Footer />
     </main>
   );

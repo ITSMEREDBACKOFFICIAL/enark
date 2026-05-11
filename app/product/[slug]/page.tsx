@@ -6,7 +6,6 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/store/useCart';
 import { useAudio } from '@/hooks/useAudio';
-import { useRecentlyViewed } from '@/store/useRecentlyViewed';
 import { ShoppingBag, Plus, Minus, Lock, Zap, Ruler, Activity } from 'lucide-react';
 import SizeGuide from '@/components/ui/SizeGuide';
 
@@ -14,7 +13,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
   const addItem = useCart((state) => state.addItem);
   const { playClick, playSuccess, playError, playHum, playGlitch } = useAudio();
-  const addRecentlyViewed = useRecentlyViewed((state) => state.addItem);
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,15 +78,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         const savedSize = localStorage.getItem('enark-last-size');
         const remembered = savedSize ? data.variants?.find((v: any) => v.size === savedSize && v.stock_quantity > 0) : null;
         setSelectedVariant(remembered || data.variants?.[0]);
-
-        addRecentlyViewed({
-          id: data.id,
-          name: data.name,
-          price: data.base_price,
-          image: data.metadata?.image,
-          category: data.category,
-          slug: data.slug
-        });
 
         const { data: related } = await supabase
           .from('products')

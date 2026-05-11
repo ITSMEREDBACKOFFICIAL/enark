@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import RecentlyViewed from '@/components/product/RecentlyViewed';
 
 export default function ShippingPage() {
   const [isSimple, setIsSimple] = useState(false);
@@ -151,7 +150,6 @@ export default function ShippingPage() {
         </div>
       </div>
 
-      <RecentlyViewed />
       <Footer />
     </main>
   );

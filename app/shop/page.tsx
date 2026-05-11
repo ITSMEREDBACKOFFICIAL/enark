@@ -5,10 +5,8 @@ import { supabase } from '@/lib/supabase';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRecentlyViewed } from '@/store/useRecentlyViewed';
 import { useAudio } from '@/hooks/useAudio';
 import { Filter, Grid, List as ListIcon, Search } from 'lucide-react';
-import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useCart } from '@/store/useCart';
 
@@ -319,7 +317,6 @@ function ShopAllContent() {
         </AnimatePresence>
       </div>
 
-      <RecentlyViewed />
       <Footer />
     </main>
   );
