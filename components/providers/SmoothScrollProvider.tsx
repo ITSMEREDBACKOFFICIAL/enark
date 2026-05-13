@@ -21,6 +21,11 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
     // Handle ScrollTrigger update
     lenis.on('scroll', ScrollTrigger.update);
 
+    // Expose to window for external control
+    if (typeof window !== 'undefined') {
+      (window as any).lenis = lenis;
+    }
+
     // Optimized Ticker Sync
     function update(time: number) {
       lenis.raf(time * 1000);
@@ -31,6 +36,9 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
 
     return () => {
       lenis.destroy();
+      if (typeof window !== 'undefined') {
+        delete (window as any).lenis;
+      }
       gsap.ticker.remove(update);
     };
   }, []);
